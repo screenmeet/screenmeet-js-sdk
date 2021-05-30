@@ -1,13 +1,13 @@
 import fetch from 'node-fetch';
 import ScreenMeetAPIError from "./ScreenMeetAPIError";
-
+import {MeResponse} from "./types/MeResponse";
 const querystring = require('querystring');
 
 export default class ScreenMeetAPI {
   key: string = '';
   endpoint: string = 'https://api-v3.screenmeet.com/v3';
 
-  me = async () => {
+  me = async ():Promise<MeResponse> =>  {
     return this.get('/me');
   }
 
@@ -20,7 +20,7 @@ export default class ScreenMeetAPI {
    * Begin base methods
    */
 
-  getBaseUrl = () => {
+  getBaseUrl = ():string => {
     return this.endpoint
   }
 
@@ -31,62 +31,49 @@ export default class ScreenMeetAPI {
       'client-app': 'screenmeet-js-sdk'
     }
   }
-  //
-  // post(path, params) {
-  //
-  //    var options = {
-  //      body: JSON.stringify(params),
-  //      method: 'POST',
-  //      url: this.getBaseUrl() + path,
-  //      headers: this.getDefaultHeaders()
-  //    }
-  //
-  //    return fetch(options.url, options )
-  //      .then(this.getResponseHandler(options))
-  //      .catch((er) => {
-  //        er.request = options;
-  //        throw er;
-  //      })
-  //
-  //  }
-  //
-  //
-  // delete(path, params) {
-  //
-  //    var options = {
-  //      body: JSON.stringify(params),
-  //      method: 'DELETE',
-  //      url: this.getBaseUrl() + path,
-  //      headers: this.getDefaultHeaders()
-  //    }
-  //
-  //    return fetch(options.url, options )
-  //      .then(this.getResponseHandler(options))
-  //      .catch((er) => {
-  //        er.request = options;
-  //        throw er;
-  //      })
-  //
-  //  }
-  //
-  // put(path, params) {
-  //
-  //    var options = {
-  //      body: JSON.stringify(params),
-  //      method: 'PUT',
-  //      url: this.getBaseUrl() + path,
-  //      headers: this.getDefaultHeaders()
-  //    }
-  //
-  //    return fetch(options.url, options )
-  //      .then(this.getResponseHandler(options))
-  //      .catch((er) => {
-  //        er.request = options;
-  //        throw er;
-  //      })
-  //
-  //  }
-  //
+
+  delete = async (path: string, params?: { [key: string]: any }) => {
+
+    var options = {
+      body: JSON.stringify(params),
+      method: 'DELETE',
+      url: this.getBaseUrl() + path,
+      headers: this.getDefaultHeaders()
+    }
+
+    let fetchResult = await fetch(options.url, options);
+    return await this.parseResponse(fetchResult, options);
+
+  }
+
+  put = async (path: string, params?: { [key: string]: any }) => {
+
+    var options = {
+      body: JSON.stringify(params),
+      method: 'PUT',
+      url: this.getBaseUrl() + path,
+      headers: this.getDefaultHeaders()
+    }
+
+    let fetchResult = await fetch(options.url, options);
+    return await this.parseResponse(fetchResult, options);
+
+  }
+
+
+  post = async (path: string, params?: { [key: string]: any }) => {
+
+     var options = {
+       body: JSON.stringify(params),
+       method: 'POST',
+       url: this.getBaseUrl() + path,
+       headers: this.getDefaultHeaders()
+     }
+
+    let fetchResult = await fetch(options.url, options);
+    return await this.parseResponse(fetchResult, options);
+
+   }
 
   get = async (path: string, params?: { [key: string]: any }) => {
 
@@ -114,6 +101,7 @@ export default class ScreenMeetAPI {
       }
       Err.response = response;
       Err.body = await response.text();
+      Err.options = options;
       throw Err;
     }
 
