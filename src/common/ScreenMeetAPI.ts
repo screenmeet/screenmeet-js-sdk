@@ -1,20 +1,32 @@
 import fetch from 'node-fetch';
 import ScreenMeetAPIError from "./ScreenMeetAPIError";
 import {MeResponse} from "./types/MeResponse";
+import {NewSessionOptions} from "./types/NewSessionOptions";
+import {SupportSession} from "./types/ScreenMeetSession";
+
 const querystring = require('querystring');
 
 export default class ScreenMeetAPI {
   key: string = '';
   endpoint: string = 'https://api-v3.screenmeet.com/v3';
 
-  me = async ():Promise<MeResponse> =>  {
-    return this.get('/me');
-  }
-
   setKey = (key: string) => {
     this.key = key;
   }
 
+  me = async ():Promise<MeResponse> =>  {
+    return this.get('/me');
+  }
+
+  signout = async ():Promise<any> =>  {
+    let result = this.get('/auth/signout');
+    this.key = '';
+    return result;
+  }
+
+  createSession = async (params:NewSessionOptions):Promise<SupportSession> => {
+    return await this.post('/supportsessions', params);
+  }
 
   /**
    * Begin base methods
