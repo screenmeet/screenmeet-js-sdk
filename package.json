@@ -8,7 +8,8 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "querystring": "^0.2.1"
   },
   "devDependencies": {
     "ts-loader": "^9.2.2",
@@ -19,6 +20,8 @@
   },
   "scripts": {
     "build:check": "tsc -p .",
-    "build:webpack": "webpack"
+    "build:webpack": "webpack",
+    "build:server": "tsc -p ./tsconfig.server.json",
+    "test:backend" : "tsc -p ./tsconfig.server.json; node test/runtests.js"
   }
 }
