@@ -1,0 +1,18 @@
+{
+  "include": [
+    "src"
+  ],
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "commonjs",
+    "esModuleInterop": false,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "target": "es5",
+    "lib": [
+      "dom",
+      "es6"
+    ]
+  }
+}
