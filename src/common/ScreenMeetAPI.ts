@@ -4,16 +4,43 @@ import {MeResponse} from "./types/MeResponse";
 import {NewSessionOptions} from "./types/NewSessionOptions";
 import {SupportSession} from "./types/ScreenMeetSession";
 
+
 const querystring = require('querystring');
 
-export default class ScreenMeetAPI {
-  key: string = '';
-  endpoint: string = 'https://api-v3.screenmeet.com/v3';
+/**
+ * The ScreenMeetAPI class is your primary surface for performing operations on the ScreenMeet platform.
+ * It provides API's to create, close, and monitor ScreenMeet sessions.
+ */
+export class ScreenMeetAPI {
+  /** This is the key to interact with the ScreenMeet API. It is generally a user session token identifying the user */
+  private key: string = '';
 
+  /** The endpoint is the API URI prefix for which ScreenMeet API version to target. */
+  private endpoint: string = 'https://api-v3.screenmeet.com/v3';
+
+  /**
+   * The ScreenMeetAPI constructor takes an optional API [[key]] as the 1st prameter parameter. It can also be set
+   * later via [[setKey]]
+   * @param key
+   */
+  constructor(key:string='') {
+    if (key) {
+      this.setKey(key);
+    }
+  }
+
+
+  /**
+   * This is a setter method to update the [[key]]
+   * @param key
+   */
   setKey = (key: string) => {
     this.key = key;
   }
 
+  /**
+   * This method returns information about the currently authenticated user. The response object is a {@link MeResponse}
+   */
   me = async ():Promise<MeResponse> =>  {
     return this.get('/me');
   }
@@ -44,7 +71,7 @@ export default class ScreenMeetAPI {
     }
   }
 
-  delete = async (path: string, params?: { [key: string]: any }) => {
+  private delete = async (path: string, params?: { [key: string]: any }) => {
 
     var options = {
       body: JSON.stringify(params),
@@ -58,7 +85,7 @@ export default class ScreenMeetAPI {
 
   }
 
-  put = async (path: string, params?: { [key: string]: any }) => {
+  private put = async (path: string, params?: { [key: string]: any }) => {
 
     var options = {
       body: JSON.stringify(params),
@@ -73,7 +100,7 @@ export default class ScreenMeetAPI {
   }
 
 
-  post = async (path: string, params?: { [key: string]: any }) => {
+  private post = async (path: string, params?: { [key: string]: any }) => {
 
      var options = {
        body: JSON.stringify(params),
@@ -87,7 +114,7 @@ export default class ScreenMeetAPI {
 
    }
 
-  get = async (path: string, params?: { [key: string]: any }) => {
+  private get = async (path: string, params?: { [key: string]: any }) => {
 
     var options = {
       method: 'GET',
