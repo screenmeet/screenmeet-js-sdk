@@ -16,7 +16,8 @@
     ]
   },
   "typedocOptions": {
-    "entryPoints": ["src/common/ScreenMeetAPI.ts"],
+    "entryPoints": ["src/common/ScreenMeetAPI.ts", "src/common/types/" ],
+    "includes" : "src/common/types/",
     "out": "docs"
   }
 }

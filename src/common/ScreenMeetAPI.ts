@@ -45,25 +45,32 @@ export class ScreenMeetAPI {
     return this.get('/me');
   }
 
+  /**
+   * Clears the [[key]] from the {@link ScreenMeetAPI} instance and signals the back-end to end the agent session
+   */
   signout = async ():Promise<any> =>  {
     let result = this.get('/auth/signout');
     this.key = '';
     return result;
   }
 
+  /**
+   * This method creates a new {@link ScreenMeetSession} session of the desired {@link ScreenMeetSessionType}.
+   *
+   */
   createSession = async (params:NewSessionOptions):Promise<SupportSession> => {
     return await this.post('/supportsessions', params);
   }
 
-  /**
+  /*
    * Begin base methods
    */
 
-  getBaseUrl = ():string => {
+  private getBaseUrl = ():string => {
     return this.endpoint
   }
 
-  getDefaultHeaders = () => {
+  private getDefaultHeaders = () => {
     return {
       'Content-Type': 'application/json',
       'Session-id': this.key,
