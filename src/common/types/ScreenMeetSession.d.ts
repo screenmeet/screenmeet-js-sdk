@@ -1,6 +1,11 @@
 import {AgentSession} from "./AgentSession";
 import {AgentPrefOptions} from "./NewSessionOptions";
 import {ScreenMeetSessionType} from "./Products";
+import {PaginatedResult} from "./PaginationCriteria";
+
+interface SupportSessionListResult extends PaginatedResult{
+  rows: [SupportSession]
+}
 
 export type SupportSession = {
   ExternalUserId: number

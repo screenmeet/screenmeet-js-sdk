@@ -35,6 +35,17 @@ async function runTests() {
   console.log(newSession);
   
   
+  console.log('Session created, fetching list:');
+  let mySessionList = await  API.listUserSessions();
+  
+  let closeId = mySessionList.rows[0].id
+  
+  console.log(mySessionList);
+  console.log('Closing 1st session in list: ' + closeId);
+  
+  let deleteResult = await API.closeSession(closeId);
+  console.log(deleteResult);
+  
 }
 
 runTests();
