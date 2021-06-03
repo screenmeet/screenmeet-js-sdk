@@ -12,7 +12,7 @@ async function runTests() {
     console.log(`Set API key from CLI ${process.argv[2].substr(0, 6)}*********`);
   }
   let me;
-  console.log('Getting me data')
+  
   try {
     me = await API.me();
   } catch (er) {
@@ -20,7 +20,7 @@ async function runTests() {
     console.error(er);
     return;
   }
-  
+
   let newSession = await API.createSession({
     userDescription: me.session.name,
     label: 'test session',
@@ -31,21 +31,34 @@ async function runTests() {
       'prerequestadmin' : false
     },
   });
-  
+
   console.log(newSession);
-  
-  
-  console.log('Session created, fetching list:');
-  let mySessionList = await  API.listUserSessions();
-  
-  let closeId = mySessionList.rows[0].id
-  
-  console.log(mySessionList);
-  console.log('Closing 1st session in list: ' + closeId);
-  
-  let deleteResult = await API.closeSession(closeId);
-  console.log(deleteResult);
-  
+  //
+  //
+  // console.log('Session created, fetching list:');
+  // let mySessionList = await  API.listUserSessions();
+  //
+  // let closeId = mySessionList.rows[0].id
+  //
+  // console.log(mySessionList);
+  // console.log('Closing 1st session in list: ' + closeId);
+  //
+  // let deleteResult = await API.closeSession(closeId);
+  // console.log(deleteResult);
+  //
+  //
+  // console.log('Getting cobrowse data for org ' + me.org.id)
+  //
+  // let cbDeployments = await API.getCobrowseDeployments(me.org.id);
+  //
+  // console.log(JSON.stringify(cbDeployments, null, 3));
+  //
+  //
+  // console.log('Getting widget config data for org ' + me.org.id)
+  //
+  // let endpoints = await API.getEndpointsConfig(me.org.id);
+  //
+  // console.log(JSON.stringify(endpoints, null, 3));
 }
 
 runTests();

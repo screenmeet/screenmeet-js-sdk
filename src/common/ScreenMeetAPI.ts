@@ -4,6 +4,7 @@ import {MeResponse} from "./types/MeResponse";
 import {NewSessionOptions} from "./types/NewSessionOptions";
 import {SupportSession,SupportSessionListResult} from "./types/ScreenMeetSession";
 import {SessionPaginationCriteria} from "./types/PaginationCriteria";
+import {CobrowseDeployment,EndpointConfig} from "./types/ConfigTypes";
 
 
 
@@ -78,6 +79,36 @@ export class ScreenMeetAPI {
    */
   closeSession = async (code:string) : Promise<{"success" : boolean}> => {
     return await this.delete(`/supportsession/${code}`, {});
+  }
+
+  /**
+   * Returns cobrowse deployments configuration for the organization
+   * @param org_id
+   */
+  getCobrowseDeployments = async (org_id: number):Promise<CobrowseDeployment> => {
+    return await this.get(`/organization/${org_id}/cobrowsedeployments`);
+  }
+
+  /**
+   * Returns endpoint configurations for an organization
+   * @param org_id
+   */
+  getEndpointsConfig = async (org_id: number):Promise<EndpointConfig> => {
+    return await this.get(`/organization/${org_id}/remotewidgetconfig`);
+  }
+
+  /**
+   * Exchanges an O-Auth authorization token for an access token on the back-end, establishes a user session,
+   * and returns a user session {@link MeResponse} object.
+   *
+   * @param provider
+   * @param session_token
+   */
+  private authWithToken = async (provider:string, session_token:string):Promise<MeResponse> => {
+
+    var payload = {session_token: session_token};
+
+    return await this.post(`/auth/${provider}/authWithToken`, payload);
   }
 
   /*

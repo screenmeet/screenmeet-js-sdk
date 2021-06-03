@@ -15,5 +15,5 @@ export interface SessionPaginationCriteria extends SessionPagination {
 
 export type PaginatedResult = {
   count: 3, /** Total number of rows matching the query */
-  rows: [any] /** result items */
+  rows: Array<any> /** result items */
 }

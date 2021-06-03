@@ -4,7 +4,7 @@ import {ScreenMeetSessionType} from "./Products";
 import {PaginatedResult} from "./PaginationCriteria";
 
 interface SupportSessionListResult extends PaginatedResult{
-  rows: [SupportSession]
+  rows: Array<SupportSession>
 }
 
 export type SupportSession = {
