@@ -115,7 +115,10 @@ export class ScreenMeetAPI {
    * Begin base methods
    */
 
-  private getBaseUrl = ():string => {
+  /**
+   * Returns the API end-point base URL
+   */
+  public getBaseUrl = ():string => {
     return this.endpoint
   }
 
