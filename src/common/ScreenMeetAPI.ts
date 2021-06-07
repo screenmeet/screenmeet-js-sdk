@@ -511,4 +511,6 @@ class ScreenMeetAPI {
  export default new ScreenMeetAPI();
  */
 
-module.exports = ScreenMeetAPI;
+module.exports = {
+  ScreenMeetAPI : ScreenMeetAPI
+};

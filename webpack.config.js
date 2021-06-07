@@ -3,7 +3,7 @@ var webpack = require('webpack');
 
 module.exports = {
   // your root file
-  entry: './src/app/index.ts',
+  entry: './src/app/ScreenMeet.ts',
   
   // output JS bundle to: build/bundle.js
   output: {

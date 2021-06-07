@@ -2,7 +2,7 @@
 //@todo make actual mocha package thing
 console.log('Beginning screenmeet api test process, key: ' + process.argv[2]);
 
-const ScreenMeetAPI = require('../lib/ScreenMeetAPI');
+const {ScreenMeetAPI} = require('../lib/ScreenMeetAPI');
 
 async function runTests() {
   let API = new ScreenMeetAPI();
@@ -20,19 +20,19 @@ async function runTests() {
     console.error(er);
     return;
   }
-
-  let newSession = await API.createSession({
-    userDescription: me.session.name,
-    label: 'test session',
-    type: "support",
-    agentPrefs: {
-      'record' : true,
-      'prerequestrc' : false,
-      'prerequestadmin' : false
-    },
-  });
-
-  console.log(newSession);
+  //
+  // let newSession = await API.createSession({
+  //   userDescription: me.session.name,
+  //   label: 'test session',
+  //   type: "support",
+  //   agentPrefs: {
+  //     'record' : true,
+  //     'prerequestrc' : false,
+  //     'prerequestadmin' : false
+  //   },
+  // });
+  //
+  // console.log(newSession);
   //
   //
   // console.log('Session created, fetching list:');
@@ -54,11 +54,11 @@ async function runTests() {
   // console.log(JSON.stringify(cbDeployments, null, 3));
   //
   //
-  // console.log('Getting widget config data for org ' + me.org.id)
-  //
-  // let endpoints = await API.getEndpointsConfig(me.org.id);
-  //
-  // console.log(JSON.stringify(endpoints, null, 3));
+  console.log('Getting widget config data for org ' + me.org.id)
+
+  let endpoints = await API.getEndpointsConfig(me.org.id);
+
+  console.log(JSON.stringify(endpoints, null, 3));
 }
 
 runTests();
