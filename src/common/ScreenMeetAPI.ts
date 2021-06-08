@@ -52,7 +52,10 @@ export class ScreenMeetAPI {
    * Clears the [[key]] from the {@link ScreenMeetAPI} instance and signals the back-end to end the agent session
    */
   signout = async ():Promise<any> =>  {
-    let result = this.get('/auth/signout');
+    let result;
+    try {
+      result = await this.get('/auth/signout');
+    } catch (er) {}
     this.key = '';
     return result;
   }

@@ -1,7 +1,7 @@
 import {ScreenMeetAPI} from '../common/ScreenMeetAPI';
 import {AuthCodeResponse} from "../common/types/AgentSession";
 import {MeResponse} from "../common/types/MeResponse";
-
+import { EventEmitter } from "events";
 const debug = require('debug')('ScreenMeet');
 
 /**
@@ -9,25 +9,38 @@ const debug = require('debug')('ScreenMeet');
  */
 export type ScreenMeetOptions = {
   persistSession?: boolean /** Whether to store session data in local storage. Data will be stored until the session expires. */
+  eventHandlers?: {
+    authenticated?: (MeResponse) => void
+    signout?: () => void
+  }
 }
 
-export default class ScreenMeet {
+export default class ScreenMeet extends EventEmitter {
   public api: ScreenMeetAPI;
   private loginWindow: any;
   private windowWatcher: any;
   private loginPromise?: Promise<any>;
   private loginFail?: (er:Error) => void;
   private userDataKey?:string = 'screenmeetuser';
+  private sessionExpiresAfter?:Date; /** Date when current session is no longer valid */
   public isAuthenticated = false;
   public me?:MeResponse;
   options: ScreenMeetOptions;
   constructor(options:ScreenMeetOptions={}) {
+    super();
+    if (options && options.eventHandlers) {
+      for (let handler in options.eventHandlers) {
+        debug(`Binding handler ${handler} from constructor options eventHandlers`);
+        this.on(handler, options.eventHandlers[handler]);
+      }
+    }
     this.api = new ScreenMeetAPI();
     this.options = options;
 
     if (options.persistSession) {
       this.restoreMe();
     }
+
 
   }
 
@@ -99,27 +112,36 @@ export default class ScreenMeet {
     if (sessionJson) {
       debug(`found user data in key ${this.userDataKey}`);
       this.me = JSON.parse(sessionJson);
+      if (!this.me) {
+        this.clearUserData();
+        return;
+      }
       this.onAuthenticated();
       debug('restored user data', this.me);
     } else {
       debug('no stored user session found');
     }
-
   }
 
   /**
    * Runs after a user is successfully authenticated
    */
   private onAuthenticated() {
+    this.emit('authenticated', this.me);
     this.isAuthenticated = true;
     this.api.setKey(this.me.session.id);
-    if (this.options.persistSession) {
-      this.rememberMe();
+    this.updateSessionExpireTime(); //this might log user out if session is expired
+    if (this.isAuthenticated) {
+      debug(`User [${this.me.user.name} ${this.me.user.externalId}] authenticated. Session expiration:` + this.sessionExpiresAfter);
+      if(this.options.persistSession) {
+        this.rememberMe();
+      }
     }
+
   }
 
   public signout() {
-    this.isAuthenticated = false;
+
     this.api.signout();
     this.clearUserData();
   }
@@ -133,11 +155,27 @@ export default class ScreenMeet {
     localStorage.setItem(this.userDataKey, userjson);
   }
 
+  /**
+   * Removes any stored user session data from this object
+   */
   private clearUserData() {
+    this.emit('signout');
+    this.isAuthenticated = false;
+    this.me = null;
+    this.api.setKey(null);
     localStorage.removeItem(this.userDataKey);
+    debug('User data cleared');
   }
 
-
+  private updateSessionExpireTime() {
+    if (this.me) {
+      this.sessionExpiresAfter = new Date(this.me.session.expiresAt);
+      if (this.sessionExpiresAfter.getTime() < Date.now()) {
+        debug('User session has expired');
+        this.clearUserData();
+      }
+    }
+  }
 
 
 
