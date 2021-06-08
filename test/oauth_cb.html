@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+<body>
+
+<h1>Processing login...</h1>
+
+
+<script>
+  function parseQuery(queryString) {
+    var query = {};
+    var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    for (var i = 0; i < pairs.length; i++) {
+      var pair = pairs[i].split('=');
+      query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+    }
+    return query;
+  }
+
+
+  var hashData = parseQuery(document.location.hash.substr(1));
+
+  if (window.opener._sm_oauth_cb) {
+    window.opener._sm_oauth_cb(hashData);
+  } else {
+    //console.log('Could not access cross-window callback function');
+  }
+
+
+
+</script>
+
+<p>This window should close automatically. If you are seeing this, something probably went wrong.</p>
+
+</body>
+</html>

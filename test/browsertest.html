@@ -4,10 +4,30 @@
     <title>Hello</title>
     <script src="../build/bundle.js"></script>
     <script>
-        let SM = new ScreenMeet();
+        let opts = {"persistSession" : true}
+        let SM = window.SM = new ScreenMeet(opts);
+        SM.api.setBaseUrl('https://ea-home-dev.screenmeet.com:3002/v3');
+
+        async function  doLogin() {
+
+          let cburl = 'https://ea-home-dev.screenmeet.com:3056/test/oauth_cb.html';
+          let provider = 'zendesk';
+          let instance = 'https://screenmeetdev.zendesk.com'
+
+          try {
+            let result = await SM.login(provider, cburl, instance);
+            console.log(result);
+          } catch (er) {
+            console.log('login failed');
+            console.error(er);
+          }
+        }
+
     </script>
 </head>
 <body>
 Hello
+
+<button onClick="doLogin()">Log in</button>
 </body>
 </html>

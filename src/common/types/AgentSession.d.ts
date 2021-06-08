@@ -39,3 +39,9 @@ export type AgentSession = {
   roles: ScreenAgentMeetRoles,
   features: ScreenMeetFeatures,
 }
+
+export type AuthCodeResponse = {
+  code: string,
+  login_intent_token: string,
+  success: "true" | "false"
+}

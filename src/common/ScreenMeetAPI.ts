@@ -104,7 +104,25 @@ export class ScreenMeetAPI {
    * @param provider
    * @param session_token
    */
-  private authWithToken = async (provider:string, session_token:string):Promise<MeResponse> => {
+
+  public authWithOauthCode = (provider:string, code:string, instance_url?:string, state?:string):Promise<MeResponse> => {
+    var params =  {code: code, instance_url: undefined, state: undefined};
+    if (instance_url) {
+      params.instance_url = instance_url;
+    }
+    if (state) {
+      params.state = state;
+    }
+    return this.get(`/auth/${provider}/exchangeCode`, params)
+  }
+
+  /**
+   * Authenticates the user with a session token
+   * @param provider
+   * @param session_token
+   */
+
+  public authWithToken = async (provider:string, session_token:string):Promise<MeResponse> => {
 
     var payload = {session_token: session_token};
 
@@ -120,6 +138,14 @@ export class ScreenMeetAPI {
    */
   public getBaseUrl = ():string => {
     return this.endpoint
+  }
+
+  /**
+   * Changes the BASE API URL. Generally used to change to a pre-production ScreenMeet environment.
+   * @param url
+   */
+  public setBaseUrl = (url):void => {
+    this.endpoint = url;
   }
 
   private getDefaultHeaders = () => {
@@ -326,23 +352,7 @@ class ScreenMeetAPI {
   }
 
 
-  /**
-   * Authenticates a user with the given provider by using a token (eg, a session ID).
-   * @param session_token string
-   *
-   *
-   * @param instance_url
-
-  authWithToken(provider, session_token) {
-
-    var payload = {session_token: session_token};
-
-    //console.log('attempting to post json to auth', payload);
-
-    return this.post(`/auth/${provider}/authWithToken`, payload);
-  }
-
-  /***
+   /***
    *
    */
 
