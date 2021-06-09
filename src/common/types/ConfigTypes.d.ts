@@ -11,13 +11,13 @@ export type CobrowseDomain = {
 
 export type CobrowseDeployment = {
   "id": 1303,
-  "key": "TtgpR",
-  "name": "TerryTest",
-  "OrganizationId": 265,
-  "entrypoint": "https://localhost.screenmeet.com:8082/prod.html",
+  "key": string,
+  "name": string,
+  "OrganizationId": number,
+  "entrypoint": string,
   "is_multidomain": false,
-  "createdAt": "2020-10-28T18:16:38.000Z",
-  "updatedAt": "2020-10-28T18:16:38.000Z",
+  "createdAt": string,
+  "updatedAt": string,
   "CobrowseDomains": Array<CobrowseDomain>
 }
 

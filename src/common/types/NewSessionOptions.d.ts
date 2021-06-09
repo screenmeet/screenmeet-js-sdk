@@ -33,8 +33,8 @@ export type NewSessionOptions = {
   userDescription: string,
   label: string,
   type: ScreenMeetSessionType,
-  agentPrefs: AgentPrefOptions
-  externalMapping?: string, //new multi-session API
-  parentObject?: ParentObject, //commented while data sync not avail
+  agentPrefs: AgentPrefOptions /** Options for this session type **/
+  externalMapping?: string, /** This should be a globally unique key referencing this object - eg, an external key with which the session will be associated. parentObject is requierd if this is set */
+  parentObject?: ParentObject, /** a description of the parent object. externalMapping is required if setting this option */
   metaData?: {[key:string]:any},
 }

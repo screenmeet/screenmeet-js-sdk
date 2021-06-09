@@ -2,6 +2,11 @@ import {ScreenMeetAPI} from '../common/ScreenMeetAPI';
 import {AuthCodeResponse} from "../common/types/AgentSession";
 import {MeResponse} from "../common/types/MeResponse";
 import { EventEmitter } from "events";
+import {ScreenMeetSessionType} from "../common/types/Products";
+import {AgentPrefOptions} from "../common/types/NewSessionOptions";
+import {ScreenMeetUrls, SupportSession} from "../common/types/ScreenMeetSession";
+import {SessionPaginationCriteria} from "../common/types/PaginationCriteria";
+import {EndpointConfig} from "../common/types/ConfigTypes";
 const debug = require('debug')('ScreenMeet');
 
 /**
@@ -23,6 +28,7 @@ export default class ScreenMeet extends EventEmitter {
   private loginFail?: (er:Error) => void;
   private userDataKey?:string = 'screenmeetuser';
   private sessionExpiresAfter?:Date; /** Date when current session is no longer valid */
+  public endpoints?: EndpointConfig;
   public isAuthenticated = false;
   public me?:MeResponse;
   options: ScreenMeetOptions;
@@ -37,13 +43,25 @@ export default class ScreenMeet extends EventEmitter {
     this.api = new ScreenMeetAPI();
     this.options = options;
 
-    if (options.persistSession) {
-      this.restoreMe();
-    }
-
 
   }
 
+  /**
+   * Initialize authentication / etc.
+   */
+  init() {
+    if (this.options.persistSession) {
+      this.restoreMe();
+    }
+  }
+
+  /**
+   * Opens an authentication dialog with the desired provider / instance. Returns a promise with a {@link MeResponse}
+   * after a successful authentication. Will reject if the auth window is closed or if there is an error.
+   * @param provider
+   * @param cburl
+   * @param instance
+   */
   login = (provider: string, cburl:string, instance:string): Promise<MeResponse> =>  {
 
     debug(`Attempting to log in [provider: ${provider} cb: ${cburl} instance:${instance}`);
@@ -103,6 +121,48 @@ export default class ScreenMeet extends EventEmitter {
   }
 
   /**
+   * Creates a session that is not associated with any external object.
+   *
+   * @param type
+   * @param label
+   * @param prefs
+   * @param userDescription - The alias to use for the creator of the session. If not used, the user name will be used.
+   */
+  createAdhocSession = async (type: ScreenMeetSessionType, label: string, prefs: AgentPrefOptions={}, userDescription?:string): Promise<SupportSession> => {
+    if (!this.isAuthenticated) { throw new Error('User must be authenticated to create new sessions.')}
+
+    let options = {
+      userDescription: userDescription ? userDescription : this.me.user.name,
+      agentPrefs: prefs,
+      type: type,
+      label: label
+    };
+
+    return await this.api.createSession(options);
+
+  }
+
+  /**
+   * Closes / ends the session with a given ID.
+   * @param id
+   */
+  async closeSession (id:string): Promise<void> {
+    if (!this.isAuthenticated) { throw new Error('User must be authenticated to close sessions.')}
+
+    await this.api.closeSession(id);
+  }
+
+  /**
+   * Returns a list of new or active sessions created by this user.
+   *
+   * @param params
+   */
+  listUserSessions = (params:SessionPaginationCriteria) => {
+    return this.api.listUserSessions(params);
+  }
+
+
+  /**
    * Restores a user session details from local storage
    */
   private restoreMe() {
@@ -126,8 +186,7 @@ export default class ScreenMeet extends EventEmitter {
   /**
    * Runs after a user is successfully authenticated
    */
-  private onAuthenticated() {
-    this.emit('authenticated', this.me);
+  private async onAuthenticated() {
     this.isAuthenticated = true;
     this.api.setKey(this.me.session.id);
     this.updateSessionExpireTime(); //this might log user out if session is expired
@@ -136,8 +195,49 @@ export default class ScreenMeet extends EventEmitter {
       if(this.options.persistSession) {
         this.rememberMe();
       }
+      await this.loadEndpointConfig();
+    }
+    this.emit('authenticated', this.me);
+  }
+
+  /**
+   * Ensures the latest endpoint configurations are loaded. These are used to construct various URL's for different
+   * session types
+   */
+  async loadEndpointConfig() {
+    if (!this.isAuthenticated) {
+      throw new Error('Cannot load endpoints while not authenticated');
+    }
+    this.endpoints = await this.api.getEndpointsConfig(this.me.org.id)
+  }
+
+  public getUrls (session:SupportSession):ScreenMeetUrls {
+    if (!this.endpoints) {
+      throw new Error(`Cannot create ScreenMeet URLs before endpoint config is loaded`);
     }
 
+    const conf = this.endpoints.widgetConfig;
+
+    switch (session.type) {
+      case "support":
+        return {
+          "invite" : `${conf.activation_base_url}/${session.pin}`,
+          "host" : `${conf.viewer_base_url}?${session.id}#token=${encodeURIComponent(this.me.session.id)}`,
+          "vanity" : `${conf.vanity_url}`
+        }
+      case "cobrowse":
+        return {}
+      case "live":
+        return {
+          "invite" : `${conf.live_url}?${session.id}`,
+          "host" : `${conf.live_url}?${session.id}#token=${encodeURIComponent(this.me.session.id)}`,
+          "vanity" : `${conf.vanity_url}`
+        }
+      case "replay":
+        return {
+          "invite" : `${conf.replay_url}/${session.id}`
+        }
+    }
   }
 
   public signout() {

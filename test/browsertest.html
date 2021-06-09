@@ -8,8 +8,16 @@
 <body>
 Hello <div id="userinfo"></div>
 <br/><br/>
+
 <button onClick="doLogin()">Log in</button>
 <button onClick="doLogout()">Log out</button>
+<br/><br/>
+<button onClick="createSession('support')">Create Support Session</button>
+<button onClick="createSession('live')">Create Live Session</button>
+<button onClick="createSession('cobrowse')">Create Cobrowse Session</button>
+<button onClick="createSession('replay')">Create Replay Session</button>
+<br><br/>
+<div id="sessions"></div>
 
 
 <script>
@@ -21,7 +29,11 @@ Hello <div id="userinfo"></div>
 
   let SM = window.SM = new ScreenMeet(opts);
   SM.api.setBaseUrl('https://ea-home-dev.screenmeet.com:3002/v3');
+  SM.init();
 
+  /**
+   * Sample function demonstrating login
+   */
   async function  doLogin() {
 
     let cburl = 'https://ea-home-dev.screenmeet.com:3056/test/oauth_cb.html';
@@ -37,6 +49,9 @@ Hello <div id="userinfo"></div>
     }
   }
 
+  /**
+   * Sample function demonstrating logout
+   **/
   async function doLogout() {
     if (!SM.isAuthenticated) {
       console.log('signout: User is not signed in, nothing to do');
@@ -47,6 +62,17 @@ Hello <div id="userinfo"></div>
 
   }
 
+  async function createSession(type) {
+    try {
+      let result = await SM.createAdhocSession(type, `My ${type} session`);
+      console.log('created session', result);
+      refreshSessions();
+    } catch (er) {
+      console.error(er);
+      console.log('Failed to create session');
+    }
+  }
+
   /**
    * Basic function that updates user name list
    */
@@ -54,9 +80,44 @@ Hello <div id="userinfo"></div>
     let infoElement = document.getElementById('userinfo');
     if (userInfo && userInfo.user) {
       infoElement.innerHTML = JSON.stringify(userInfo.user);
+      refreshSessions();
     } else {
       infoElement.innerText = 'Unauthenticated user';
     }
+  }
+
+  async function refreshSessions() {
+    if (!SM.isAuthenticated) return;
+
+    let sessions = await SM.listUserSessions();
+
+    let sessionsHtml = '';
+    sessions.rows.forEach((s) => {
+      sessionsHtml += renderSession(s);
+    });
+
+    document.getElementById('sessions').innerHTML = sessionsHtml;
+
+  }
+
+  async function closeSession(id) {
+    await SM.closeSession(id);
+    this.refreshSessions();
+  }
+
+  function renderSession (session) {
+    let urls = SM.getUrls(session);
+
+    let urlsHTML = '';
+
+    if (urls.invite) {
+      urlsHTML += ` <a href='${urls.invite}'>invite link</a> `;
+    }
+    if (urls.host) {
+      urlsHTML += ` <a href='${urls.host}'>host link</a> `;
+    }
+    let sessionHtmlRow = `<div>[${session.id}][${session.status}][${session.type}] ${session.label} [${urlsHTML}] [<a href="javascript:void(0)" onClick="closeSession('${session.id}')">X</a>]</div>`;
+    return sessionHtmlRow;
   }
 
 </script>
