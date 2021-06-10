@@ -17,8 +17,14 @@ Hello <div id="userinfo"></div>
 <button onClick="createSession('cobrowse')">Create Cobrowse Session</button>
 <button onClick="createSession('replay')">Create Replay Session</button>
 <br><br/>
-<div id="sessions"></div>
+<button onClick="createRelatedSession('support')">Create Support Session (related)</button>
 
+<br/><br/>
+<b>User Sessions:</b>
+<div id="sessions"></div>
+<br/><br/>
+<b>Object related sessions:</b><br/>
+<div id="objsessions"></div>
 
 <script>
   let opts = {"persistSession" : true,
@@ -30,6 +36,7 @@ Hello <div id="userinfo"></div>
   let SM = window.SM = new ScreenMeet(opts);
   SM.api.setBaseUrl('https://ea-home-dev.screenmeet.com:3002/v3');
   SM.init();
+  const objectKey = 'spiffycrm.acmebrand.case.g4j231j8f';
 
   /**
    * Sample function demonstrating login
@@ -62,9 +69,34 @@ Hello <div id="userinfo"></div>
 
   }
 
+/**
+ * Creates a session with no external entity association - just owned by the user
+ */
   async function createSession(type) {
     try {
       let result = await SM.createAdhocSession(type, `My ${type} session`);
+      console.log('created session', result);
+      refreshSessions();
+    } catch (er) {
+      console.error(er);
+      console.log('Failed to create session');
+    }
+  }
+
+  /**
+   * Creates a session associated with an external object.
+   */
+  async function createRelatedSession(type) {
+    try {
+      let result = await SM.createRelatedSession(type, `My ${type} session`, {},
+        {
+          'app ' : 'demoapp',
+          'type' : 'case', //object type
+          'name' : 'My demo case', //name of object - goes into label field
+          'sync' : false
+        },
+        objectKey
+      );
       console.log('created session', result);
       refreshSessions();
     } catch (er) {
@@ -83,20 +115,33 @@ Hello <div id="userinfo"></div>
       refreshSessions();
     } else {
       infoElement.innerText = 'Unauthenticated user';
+      document.getElementById('sessions').innerHTML = '';
+      document.getElementById('objsessions').innerHTML = '';
     }
   }
 
   async function refreshSessions() {
     if (!SM.isAuthenticated) return;
 
+    //rerfresh all user sessions
     let sessions = await SM.listUserSessions();
 
     let sessionsHtml = '';
     sessions.rows.forEach((s) => {
       sessionsHtml += renderSession(s);
     });
-
     document.getElementById('sessions').innerHTML = sessionsHtml;
+
+    //refresh all object related sessions
+    let objSessionHtml = '';
+    let relatedSessions = await SM.listRelatedObjectSessions(objectKey);
+
+    relatedSessions.forEach((s) => {
+      objSessionHtml += renderSession(s);
+    });
+
+
+    document.getElementById('objsessions').innerHTML = objSessionHtml;
 
   }
 

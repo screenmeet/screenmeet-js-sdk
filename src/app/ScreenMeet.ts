@@ -3,7 +3,7 @@ import {AuthCodeResponse} from "../common/types/AgentSession";
 import {MeResponse} from "../common/types/MeResponse";
 import { EventEmitter } from "events";
 import {ScreenMeetSessionType} from "../common/types/Products";
-import {AgentPrefOptions} from "../common/types/NewSessionOptions";
+import {AgentPrefOptions, ParentObject} from "../common/types/NewSessionOptions";
 import {ScreenMeetUrls, SupportSession} from "../common/types/ScreenMeetSession";
 import {SessionPaginationCriteria} from "../common/types/PaginationCriteria";
 import {EndpointConfig} from "../common/types/ConfigTypes";
@@ -143,6 +143,37 @@ export default class ScreenMeet extends EventEmitter {
   }
 
   /**
+   * Creates a session that is not associated with any external object.
+   *
+   * @param type
+   * @param label
+   * @param prefs
+   * @param parentObject A {@link ParentObject} describing the related object. This is used to perform data synchronization.
+   * @param externalMapping - This should be a globally unique string identifying the parent object. eg: myservicename.myinstance.myobject.id (spiffycrm.acmebrand.case.g4j231j8f).
+   * @param userDescription - The alias to use for the creator of the session. If not used, the user name will be used.
+   */
+  createRelatedSession = async (type: ScreenMeetSessionType,
+                                label: string,
+                                prefs: AgentPrefOptions={},
+                                parentObject:ParentObject,
+                                externalMapping:string,
+                                userDescription?:string ): Promise<SupportSession> => {
+    if (!this.isAuthenticated) { throw new Error('User must be authenticated to create new sessions.')}
+
+    let options = {
+      userDescription: userDescription ? userDescription : this.me.user.name,
+      agentPrefs: prefs,
+      type: type,
+      label: label,
+      externalMapping: externalMapping,
+      parentObject: parentObject
+    };
+
+    return await this.api.createSession(options);
+
+  }
+
+  /**
    * Closes / ends the session with a given ID.
    * @param id
    */
@@ -159,6 +190,14 @@ export default class ScreenMeet extends EventEmitter {
    */
   listUserSessions = (params:SessionPaginationCriteria) => {
     return this.api.listUserSessions(params);
+  }
+
+  /**
+   * Returns a promise that resolves with an array of sessions associated with the related object mapping key
+   * @param externalObjectMappingKey
+   */
+  listRelatedObjectSessions = (externalObjectMappingKey:string) => {
+    return this.api.listRelatedObjectSessions(externalObjectMappingKey);
   }
 
 

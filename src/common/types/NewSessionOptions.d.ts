@@ -1,19 +1,19 @@
 import {ScreenMeetSessionType} from "./Products";
 
 export type LiveSessionAgentPrefs = {
-  'knock' : boolean,
-  'record' : boolean,
-  'audio' : boolean
+  knock : boolean,
+  record : boolean,
+  audio : boolean
 };
 
 export type CobrowseSessionAgentPrefs = {
-  'record' : boolean
+  record : boolean
 };
 
 export type SupportSessionAgentPrefs = {
-  'record' : boolean,
-  'prerequestrc' : boolean,
-  'prerequestadmin' : boolean
+  record : boolean,
+  prerequestrc : boolean,
+  prerequestadmin : boolean
 }
 
 export type ReplaySessionAgentPrefs = {}
@@ -21,12 +21,11 @@ export type ReplaySessionAgentPrefs = {}
 export type AgentPrefOptions = SupportSessionAgentPrefs | LiveSessionAgentPrefs | CobrowseSessionAgentPrefs | ReplaySessionAgentPrefs;
 
 export type ParentObject = {
-  'string' : string
-  'app ' : string,
-  'type' : string, //object type
-  'name' : string, //name of object - goes into label field
-  'sync' : boolean,
-  'provider' : string
+  app  : string,
+  type : string, /** object type */
+  name : string, /** name of object - goes into label field */
+  sync : boolean, /** Whether to perform outbound synchronization with the parent object via back-end */
+  provider? : string /** The provider type for the data integration */
 };
 
 export type NewSessionOptions = {

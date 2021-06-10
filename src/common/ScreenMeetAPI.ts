@@ -65,6 +65,9 @@ export class ScreenMeetAPI {
    *
    */
   createSession = async (params:NewSessionOptions):Promise<SupportSession> => {
+    if (params.parentObject && !params.parentObject.provider) {
+      params.parentObject.provider = 'webwidget'; //special case that will not cause a sync error
+    }
     return await this.post('/supportsessions', params);
   }
 
@@ -74,6 +77,16 @@ export class ScreenMeetAPI {
    */
   listUserSessions = async (params:SessionPaginationCriteria= {"limit" : 20, "orderdir":"DESC", "orderby" : "createdAt","offset":0} ):Promise<[SupportSessionListResult]> => {
     return await this.get('/supportsessions', params);
+  }
+
+  /**
+   * Returns a promise that resolves with an array of sessions associated with the related object mapping key
+   * @param externalObjectMappingKey
+   */
+  listRelatedObjectSessions = async (externalObjectMappingKey: string):Promise<Array<SupportSession>> => {
+
+      return this.get(`/crmlookup/${externalObjectMappingKey}`);
+
   }
 
   /**
@@ -132,9 +145,14 @@ export class ScreenMeetAPI {
     return await this.post(`/auth/${provider}/authWithToken`, payload);
   }
 
-  /*
-   * Begin base methods
+  /**
+   * Returns configuration data for the given config
+   * @param configTypeId
    */
+  public getConfiguration = async (configTypeId) => {
+    return await this.get(`/configuration/${configTypeId}`);
+  }
+
 
   /**
    * Returns the API end-point base URL
@@ -240,12 +258,6 @@ export class ScreenMeetAPI {
 /*
 
 
-import connect from "react-redux/es/connect/connect";
-
-/**
- * REST Interface for back-end API
-
-
 var querystring = require('querystring');
 
 class ScreenMeetAPI {
@@ -337,196 +349,7 @@ class ScreenMeetAPI {
   }
 
 
-
-  /**
-   * Authenticates a user with a code received by a callback URL from an oauth provider
-   * @param provider
-   * @param code
-
-  authWithOauthCode(provider, code, instance_url, state) {
-    var params =  {code: code};
-    if (instance_url) {
-      params.instance_url = instance_url;
-    }
-    if (state) {
-      params.state = state;
-    }
-    return this.get(`/auth/${provider}/exchangeCode`, params)
-  }
-
-
-   /***
-   *
-   */
-
-/**
- * Post request maker
- * @param path
- * @param params
- * @returns {Promise.<TResult>}
-
- post(path, params) {
-
-    var options = {
-      body: JSON.stringify(params),
-      method: 'POST',
-      url: this.getBaseUrl() + path,
-      headers: this._getDefaultHeaders()
-    }
-
-    return fetch(options.url, options )
-      .then(this.getResponseHandler(options))
-      .catch((er) => {
-        er.request = options;
-        throw er;
-      })
-
-  }
-
-
- /**
- * DELETE request maker
- * @param path
- * @param params
- * @returns {Promise.<TResult>}
-
- delete(path, params) {
-
-    var options = {
-      body: JSON.stringify(params),
-      method: 'DELETE',
-      url: this.getBaseUrl() + path,
-      headers: this._getDefaultHeaders()
-    }
-
-    return fetch(options.url, options )
-      .then(this.getResponseHandler(options))
-      .catch((er) => {
-        er.request = options;
-        throw er;
-      })
-
-  }
-
- /**
- * Put request maker
- * @param path
- * @param params
- * @returns {Promise.<TResult>}
-
- put(path, params) {
-
-    var options = {
-      body: JSON.stringify(params),
-      method: 'PUT',
-      url: this.getBaseUrl() + path,
-      headers: this._getDefaultHeaders()
-    }
-
-    return fetch(options.url, options )
-      .then(this.getResponseHandler(options))
-      .catch((er) => {
-        er.request = options;
-        throw er;
-      })
-
-  }
-
-
- /**
- * GET request maker
- * @param path
- * @param params
- * @returns {Promise.<TResult>}
-
- get(path, params) {
-
-    var options = {
-      method: 'GET',
-      url: this.getBaseUrl() + path + '?' + querystring.stringify(params),
-      headers: this._getDefaultHeaders()
-    }
-
-    return fetch(options.url, options )
-      .then(this.getResponseHandler(options))
-      .catch((er) => {
-        er.request = options;
-        throw er;
-      })
-
-  }
-
-
-
- /**
- * Returns a handler for the response. Wrapped for debugging/error stuff.
- * @param options
- * @returns {function(*)}
-
- getResponseHandler(options) {
-
-    var request_time = new Date();
-
-    return (response) => {
-
-      if (response.status === 200) {
-        return response.json()
-          .then((result) => {
-
-            return result;
-
-          });
-      } else {
-        var response_time = new Date();
-
-        if (response.status === 401) {
-          var Err = new Error(`Your session has expired or you have signed out in another window`);
-        } else {
-          var Err = new Error(`HTTP ${response.status} ${response.statusText} while making API request`);
-        }
-
-        Err.response = response;
-        Err.times = {
-          'request' : request_time,
-          'response' : response_time,
-          'duration_ms' : response_time - request_time
-        };
-
-        return response.text().then((bodyData) => {
-          Err.bodyText = bodyData;
-          throw Err;
-        })
-
-      }
-    }
-  }
-
- /**
- * This is decoupled so that each respective promise chain can wrap itself up properly and in order.
- * They will use this as .catch(API.handleApiError)
- * @param err
-
- handleApiError = (err) => {
-
-    if (err && err.response && err.response.status === 401) {
-      this.store.dispatch({'type' : 'LOG_OUT', 'message' : 'You session has expired'});
-    } else {
-      this.store.dispatch({'type' : 'UNEXPECTED_ERROR', 'error' : err});
-    }
-
-
-  }
-
- async sha256(str) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder("utf-8").encode(str));
-    return Array.prototype.map.call(new Uint8Array(buf), x=>(('00'+x.toString(16)).slice(-2))).join('');
-  }
-
- }
-
- export default new ScreenMeetAPI();
- */
-
+*/
 module.exports = {
   ScreenMeetAPI : ScreenMeetAPI
 };
