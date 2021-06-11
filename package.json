@@ -9,6 +9,7 @@
   "private": false,
   "dependencies": {
     "debug": "^4.3.1",
+    "lodash.keyby": "^4.6.0",
     "node-fetch": "^2.6.1",
     "querystring": "^0.2.1"
   },

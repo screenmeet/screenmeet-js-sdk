@@ -75,7 +75,7 @@ export class ScreenMeetAPI {
    * This method will retreive a list of all new and active sessions that belong to the authenticated user.
    * @param params
    */
-  listUserSessions = async (params:SessionPaginationCriteria= {"limit" : 20, "orderdir":"DESC", "orderby" : "createdAt","offset":0} ):Promise<[SupportSessionListResult]> => {
+  listUserSessions = async (params:SessionPaginationCriteria= {"limit" : 20, "orderdir":"DESC", "orderby" : "createdAt","offset":0} ):Promise<SupportSessionListResult> => {
     return await this.get('/supportsessions', params);
   }
 

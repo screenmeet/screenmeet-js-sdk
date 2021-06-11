@@ -4,9 +4,10 @@ import {MeResponse} from "../common/types/MeResponse";
 import { EventEmitter } from "events";
 import {ScreenMeetSessionType} from "../common/types/Products";
 import {AgentPrefOptions, ParentObject} from "../common/types/NewSessionOptions";
-import {ScreenMeetUrls, SupportSession} from "../common/types/ScreenMeetSession";
+import {ScreenMeetUrls, SupportSession, SupportSessionListResult} from "../common/types/ScreenMeetSession";
 import {SessionPaginationCriteria} from "../common/types/PaginationCriteria";
 import {EndpointConfig} from "../common/types/ConfigTypes";
+const keyby = require('lodash.keyby');
 const debug = require('debug')('ScreenMeet');
 
 /**
@@ -31,6 +32,8 @@ export default class ScreenMeet extends EventEmitter {
   public endpoints?: EndpointConfig;
   public isAuthenticated = false;
   public me?:MeResponse;
+  public trackedSessions?: {[id:string]:SupportSession};
+  private trackedSessionIdList?: string;
   options: ScreenMeetOptions;
   constructor(options:ScreenMeetOptions={}) {
     super();
@@ -187,19 +190,42 @@ export default class ScreenMeet extends EventEmitter {
    * Returns a list of new or active sessions created by this user.
    *
    * @param params
+   * @param trackState - if this is true, the client will periodically poll for the state of the sessions
    */
-  listUserSessions = (params:SessionPaginationCriteria) => {
-    return this.api.listUserSessions(params);
+  listUserSessions = async (params:SessionPaginationCriteria, trackState=false):Promise<SupportSessionListResult> => {
+    let result = await this.api.listUserSessions(params);
+    if (trackState) {
+      this.updateTrackedSessionList(result.rows);
+    }
+    return result;
   }
 
   /**
    * Returns a promise that resolves with an array of sessions associated with the related object mapping key
    * @param externalObjectMappingKey
+   * @param trackState - if this is true, the client will periodically poll for the state of the sessions
    */
-  listRelatedObjectSessions = (externalObjectMappingKey:string) => {
-    return this.api.listRelatedObjectSessions(externalObjectMappingKey);
+  listRelatedObjectSessions = async (externalObjectMappingKey:string, trackState=false):Promise<Array<SupportSession>> => {
+    let result = await this.api.listRelatedObjectSessions(externalObjectMappingKey);
+    if (trackState) {
+      this.updateTrackedSessionList(result);
+    }
+    return result;
   }
 
+  /**
+   *
+   * @param sessions
+   */
+  private updateTrackedSessionList = (sessions:Array<SupportSession>) => {
+    //updating tracked list
+    let sessionsToTrack = keyby(sessions, 'id');
+    this.trackedSessions = sessionsToTrack;
+    this.trackedSessionIdList = Object.keys(this.trackedSessions).join(',');
+
+    debug('Updated tracked sessions. Current list:', this.trackedSessions, 'idlist', this.trackedSessionIdList);
+
+  }
 
   /**
    * Restores a user session details from local storage
