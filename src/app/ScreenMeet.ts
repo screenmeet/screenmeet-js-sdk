@@ -7,6 +7,7 @@ import {AgentPrefOptions, ParentObject} from "../common/types/NewSessionOptions"
 import {ScreenMeetUrls, SupportSession, SupportSessionListResult} from "../common/types/ScreenMeetSession";
 import {SessionPaginationCriteria} from "../common/types/PaginationCriteria";
 import {EndpointConfig} from "../common/types/ConfigTypes";
+import {DiscoveryResponse} from "../common/types/DiscoveryResponse";
 const keyby = require('lodash.keyby');
 const debug = require('debug')('ScreenMeet');
 
@@ -14,7 +15,8 @@ const debug = require('debug')('ScreenMeet');
  * Options of initializing the screenmeet object
  */
 export type ScreenMeetOptions = {
-  persistSession?: boolean /** Whether to store session data in local storage. Data will be stored until the session expires. */
+  persistAuth?: boolean /** Whether to store session data in local storage. Data will be stored until the session expires. */
+  trackSessionState?: boolean /** If this is true, the client will periodically poll for the state of the sessions */
   eventHandlers?: {
     authenticated?: (MeResponse) => void
     signout?: () => void
@@ -33,7 +35,12 @@ export default class ScreenMeet extends EventEmitter {
   public isAuthenticated = false;
   public me?:MeResponse;
   public trackedSessions?: {[id:string]:SupportSession};
-  private trackedSessionIdList?: string;
+  private refreshMethod: () => Promise<any>;
+  private lastDiscoveryResult:string='';
+  private discoveryIntervalMs:number = 15000;
+  private discoveryInterval:any=null;
+  private trackedSessionIdList?: Array<string>;
+
   options: ScreenMeetOptions;
   constructor(options:ScreenMeetOptions={}) {
     super();
@@ -45,6 +52,9 @@ export default class ScreenMeet extends EventEmitter {
     }
     this.api = new ScreenMeetAPI();
     this.options = options;
+    if (this.options.trackSessionState) {
+      this.discoveryInterval = setInterval(this.pollSessionDiscovery, this.discoveryIntervalMs);
+    }
 
 
   }
@@ -53,7 +63,7 @@ export default class ScreenMeet extends EventEmitter {
    * Initialize authentication / etc.
    */
   init() {
-    if (this.options.persistSession) {
+    if (this.options.persistAuth) {
       this.restoreMe();
     }
   }
@@ -190,12 +200,13 @@ export default class ScreenMeet extends EventEmitter {
    * Returns a list of new or active sessions created by this user.
    *
    * @param params
-   * @param trackState - if this is true, the client will periodically poll for the state of the sessions
    */
-  listUserSessions = async (params:SessionPaginationCriteria, trackState=false):Promise<SupportSessionListResult> => {
+  listUserSessions = async (params:SessionPaginationCriteria):Promise<SupportSessionListResult> => {
     let result = await this.api.listUserSessions(params);
-    if (trackState) {
+    if (this.options.trackSessionState) {
       this.updateTrackedSessionList(result.rows);
+      //sets the method to use to refresh the current session list after polling
+      this.refreshMethod = async () => { return this.listUserSessions(params); }
     }
     return result;
   }
@@ -203,12 +214,13 @@ export default class ScreenMeet extends EventEmitter {
   /**
    * Returns a promise that resolves with an array of sessions associated with the related object mapping key
    * @param externalObjectMappingKey
-   * @param trackState - if this is true, the client will periodically poll for the state of the sessions
    */
-  listRelatedObjectSessions = async (externalObjectMappingKey:string, trackState=false):Promise<Array<SupportSession>> => {
+  listRelatedObjectSessions = async (externalObjectMappingKey:string):Promise<Array<SupportSession>> => {
     let result = await this.api.listRelatedObjectSessions(externalObjectMappingKey);
-    if (trackState) {
+    if (this.options.trackSessionState) {
       this.updateTrackedSessionList(result);
+      //sets the method to use to refresh the current session list after polling
+      this.refreshMethod = async () => { return this.listRelatedObjectSessions(externalObjectMappingKey); }
     }
     return result;
   }
@@ -221,7 +233,9 @@ export default class ScreenMeet extends EventEmitter {
     //updating tracked list
     let sessionsToTrack = keyby(sessions, 'id');
     this.trackedSessions = sessionsToTrack;
-    this.trackedSessionIdList = Object.keys(this.trackedSessions).join(',');
+    this.trackedSessionIdList = Object.keys(this.trackedSessions);
+
+    this.emit('updated',this.trackedSessions);
 
     debug('Updated tracked sessions. Current list:', this.trackedSessions, 'idlist', this.trackedSessionIdList);
 
@@ -257,7 +271,7 @@ export default class ScreenMeet extends EventEmitter {
     this.updateSessionExpireTime(); //this might log user out if session is expired
     if (this.isAuthenticated) {
       debug(`User [${this.me.user.name} ${this.me.user.externalId}] authenticated. Session expiration:` + this.sessionExpiresAfter);
-      if(this.options.persistSession) {
+      if(this.options.persistAuth) {
         this.rememberMe();
       }
       await this.loadEndpointConfig();
@@ -300,7 +314,7 @@ export default class ScreenMeet extends EventEmitter {
         }
       case "replay":
         return {
-          "invite" : `${conf.replay_url}/${session.id}`
+          "invite" : `${conf.replay_url}${session.id}`
         }
     }
   }
@@ -342,6 +356,39 @@ export default class ScreenMeet extends EventEmitter {
     }
   }
 
+  pollSessionDiscovery = async () => {
+    debug('[pollSessionDiscovery] Starting to poll for session state changes');
+    let shouldRefresh = false;
+    if (!this.trackedSessionIdList) {
+      debug('[pollSessionDiscovery] no sessions to track')
+      return;
+    }
+    let disco = await this.api.pollDiscoveryState(this.trackedSessionIdList);
+    let discoJSON = JSON.stringify(disco);
+
+    if (this.lastDiscoveryResult && this.lastDiscoveryResult !== discoJSON) {
+      debug('[pollSessionDiscovery] Discovery results changed, should refresh');
+      shouldRefresh = true;
+    } else if (!this.lastDiscoveryResult) {
+      debug('[pollSessionDiscovery] first poll result processing');
+      for (let sessionId in disco) {
+        if (this.trackedSessions[sessionId] && this.trackedSessions[sessionId].status !== 'active') {
+          debug(`[pollSessionDiscovery] status of session on first poll is active for ${sessionId} - should refresh`);
+          shouldRefresh = true;
+        }
+      }
+    }
+
+
+    this.lastDiscoveryResult = discoJSON;
+
+    if (shouldRefresh) {
+      debug(`[pollSessionDiscovery] SHOULD REFRESH`);
+    }
+
+
+
+  }
 
 
   private getAuthUrl = (provider:string, cburl:string, instance:string) => {

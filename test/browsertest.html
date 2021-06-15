@@ -27,7 +27,9 @@ Hello <div id="userinfo"></div>
 <div id="objsessions"></div>
 
 <script>
-  let opts = {"persistSession" : true,
+  let opts = {
+    "persistAuth" : true,
+    "trackSessionState" : true, //will poll for session state
     eventHandlers:{
       authenticated: updateUserInfo,
       signout: updateUserInfo

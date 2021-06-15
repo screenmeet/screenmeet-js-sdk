@@ -6,4 +6,9 @@ export type Products = {
   beam: {}
 }
 
-export type ScreenMeetSessionType = "support" | "cobrowse" | "live" | "replay"
+export enum ScreenMeetSessionType {
+  "support" = "support",
+  "cobrowse" = "cobrowse",
+  "live" = "live" ,
+  "replay" = "replay"
+}

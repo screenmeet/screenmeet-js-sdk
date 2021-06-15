@@ -5,6 +5,7 @@ import {NewSessionOptions} from "./types/NewSessionOptions";
 import {SupportSession,SupportSessionListResult} from "./types/ScreenMeetSession";
 import {SessionPaginationCriteria} from "./types/PaginationCriteria";
 import {CobrowseDeployment,EndpointConfig} from "./types/ConfigTypes";
+import {DiscoveryResponse} from "./types/DiscoveryResponse";
 
 
 
@@ -167,6 +168,15 @@ export class ScreenMeetAPI {
    */
   public setBaseUrl = (url):void => {
     this.endpoint = url;
+  }
+
+  /**
+   * Polls the discovery service with a list of session ID's (max 20) and will return a {@link DiscoveryResponse}
+   * which will include any sessions that have an active state
+   * @param sessionIdList
+   */
+  public pollDiscoveryState = async (sessionIdList:Array<string>):Promise<DiscoveryResponse> => {
+    return await this.get(`/discovery`, {'ids' : sessionIdList.join(',')});
   }
 
   private getDefaultHeaders = () => {
