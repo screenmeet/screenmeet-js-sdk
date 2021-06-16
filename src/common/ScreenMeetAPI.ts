@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import ScreenMeetAPIError from "./ScreenMeetAPIError";
+import {ScreenMeetAPIError} from "./ScreenMeetAPIError";
 import {MeResponse} from "./types/MeResponse";
 import {NewSessionOptions} from "./types/NewSessionOptions";
 import {SupportSession,SupportSessionListResult} from "./types/ScreenMeetSession";
@@ -271,102 +271,6 @@ export class ScreenMeetAPI {
 
 
 }
-
-/*
-
-
-var querystring = require('querystring');
-
-class ScreenMeetAPI {
-
-  store = null;
-
-  base_url = null;
-
-  session_id = '0';
-
-  setStore(store) {
-    this.store = store;
-  }
-
-  getBaseUrl() {
-    if (!this.base_url) {
-      this.base_url = this.store.getState().config.urls.api
-    }
-    return this.base_url;
-  }
-
-  session = {
-    me: () => {
-      return this.get(`/me`);
-    },
-    signout: () => {
-      return this.get(`/auth/signout`);
-    },
-    getWidgetConfig: () => {
-      const orgId = this.store.getState().org.id;
-      return this.get(`/organization/${orgId}/remotewidgetconfig`).then((result => {
-        if (result.widgetConfig && result.widgetConfig.cobrowse) {
-          return this.org.getCobrowseDeployments(orgId).then(cobrowseDeployments => {
-            result.widgetConfig.cobrowseDeployments = cobrowseDeployments;
-            return result;
-          });
-        } else {
-          return result;
-        }
-      }));
-    }
-  };
-
-  support = {
-    createSupportSessions: (data) => {
-      return this.post('/supportsessions', data);
-    },
-    closeSession: (code) => {
-      return this.delete(`/supportsession/${code}`, {});
-    },
-    getSessionList: (key) => {
-      return this.get(`/crmlookup/${key}`);
-    }
-  };
-
-  org = {
-    getCobrowseDeployments: (orgId) => {
-      return this.get(`/organization/${orgId}/cobrowsedeployments`);
-    }
-  };
-
-  /**
-   * Returns current session id
-   * @private
-
-  _getSessionId() {
-    if (this.store && this.store.getState().session) {
-      return this.store.getState().session.id
-    }
-  }
-
-  _getDefaultHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'Session-id': this._getSessionId(),
-      'client-app' : 'crm-widget'
-    }
-  }
-
-
-  /**
-   * Returns configuration data for a certain path.
-   *
-   * @param dotpath
-   * @returns {Promise.<TResult>}
-
-  getConfiguration(dotpath) {
-    return this.get(`/configuration/${dotpath}`);
-  }
-
-
-*/
 module.exports = {
   ScreenMeetAPI : ScreenMeetAPI
 };

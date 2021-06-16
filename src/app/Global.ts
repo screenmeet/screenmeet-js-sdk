@@ -13,7 +13,11 @@ import {DiscoveryResponse} from "../common/types/DiscoveryResponse";
 
 const debug = require('debug')('ScreenMeet:Global');
 
-export default class Global extends EventEmitter{
+/**
+ * This is a window-global front-end only class for ScreenMeet. It manages authentication as well as session
+ * state polling.
+ */
+export class Global extends EventEmitter{
 
   public isAuthenticated = false;
   public api: ScreenMeetAPI;

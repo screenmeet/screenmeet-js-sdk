@@ -7,7 +7,7 @@ import {AgentPrefOptions, ParentObject} from "../common/types/NewSessionOptions"
 import {ScreenMeetUrls, SupportSession, SupportSessionListResult} from "../common/types/ScreenMeetSession";
 import {SessionPaginationCriteria} from "../common/types/PaginationCriteria";
 import {DiscoveryResponse} from "../common/types/DiscoveryResponse";
-import Global from "./Global";
+import {Global} from "./Global";
 const keyby = require('lodash.keyby');
 const debug = require('debug')('ScreenMeet:main');
 
@@ -29,7 +29,12 @@ export type ScreenMeetOptions = {
   }
 }
 
-export default class ScreenMeet extends EventEmitter {
+/**
+ * This is a browser-only class.
+ * Creates a ScreenMeet object which can be used to render session information to an UI.
+ * Will automatically intantiate a {@link Global} instance when constructed
+ */
+export class ScreenMeet extends EventEmitter {
   public api: ScreenMeetAPI;
 
   public destroyed=false;
@@ -40,6 +45,8 @@ export default class ScreenMeet extends EventEmitter {
   public global : Global;
 
   public options: ScreenMeetOptions;
+
+
   constructor(options:ScreenMeetOptions={'mode' : 'adhoc'}) {
     super();
 
@@ -302,5 +309,4 @@ export default class ScreenMeet extends EventEmitter {
 
 //@ts-ignore
 window.ScreenMeet = ScreenMeet;
-
-module.exports = ScreenMeet;
+export default ScreenMeet;

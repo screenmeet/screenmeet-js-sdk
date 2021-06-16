@@ -1,4 +1,4 @@
-export default class ScreenMeetAPIError extends Error {
+export class ScreenMeetAPIError extends Error {
   response?:XMLHttpRequestResponseType;
   body?: string;
   options?: { [key:string]:any };
