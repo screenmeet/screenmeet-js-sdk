@@ -27,17 +27,21 @@ Hello <div id="userinfo"></div>
 <div id="objsessions"></div>
 
 <script>
-  let opts = {
+  let opts_adhoc = {
+    "mode" : "adhoc",
     "persistAuth" : true,
     "trackSessionState" : true, //will poll for session state
-    eventHandlers:{
+    "api_endpoint" : 'https://ea-home-dev.screenmeet.com:3002/v3',
+    "eventHandlers":{
       authenticated: updateUserInfo,
       signout: updateUserInfo
     }};
 
-  let SM = window.SM = new ScreenMeet(opts);
-  SM.api.setBaseUrl('https://ea-home-dev.screenmeet.com:3002/v3');
-  SM.init();
+  let opts_related = {...opts_adhoc, mode:"object", eventHandlers: {}}; //only set up auth handlers for one of the instances
+
+  let SMAdhoc = new ScreenMeet(opts_adhoc);
+  let SMObject = new ScreenMeet(opts_related);
+
   const objectKey = 'spiffycrm.acmebrand.case.g4j231j8f';
 
   /**
@@ -50,7 +54,7 @@ Hello <div id="userinfo"></div>
     let instance = 'https://screenmeetdev.zendesk.com'
 
     try {
-      let result = await SM.login(provider, cburl, instance);
+      let result = await SMAdhoc.login(provider, cburl, instance);
       console.log(result);
     } catch (er) {
       console.log('login failed');
@@ -62,12 +66,12 @@ Hello <div id="userinfo"></div>
    * Sample function demonstrating logout
    **/
   async function doLogout() {
-    if (!SM.isAuthenticated) {
+    if (!SMAdhoc.isAuthenticated()) {
       console.log('signout: User is not signed in, nothing to do');
       return;
     }
 
-    SM.signout();
+    SMAdhoc.signout();
 
   }
 
@@ -114,46 +118,48 @@ Hello <div id="userinfo"></div>
     let infoElement = document.getElementById('userinfo');
     if (userInfo && userInfo.user) {
       infoElement.innerHTML = JSON.stringify(userInfo.user);
-      refreshSessions();
+      //refreshSessions();
     } else {
       infoElement.innerText = 'Unauthenticated user';
-      document.getElementById('sessions').innerHTML = '';
-      document.getElementById('objsessions').innerHTML = '';
+      // document.getElementById('sessions').innerHTML = '';
+      // document.getElementById('objsessions').innerHTML = '';
     }
   }
 
   async function refreshSessions() {
-    if (!SM.isAuthenticated) return;
+    if (SMAdhoc.isAuthenticated()) {
+      //rerfresh all user sessions
+      let sessions = await SMAdhoc.listUserSessions(null, false);
 
+      let sessionsHtml = '';
+      sessions.rows.forEach((s) => {
+        sessionsHtml += renderSession(s);
+      });
 
-    //refresh all object related sessions
-    let objSessionHtml = '';
-    let relatedSessions = await SM.listRelatedObjectSessions(objectKey, false);
+      document.getElementById('objsessions').innerHTML = objSessionHtml;
+    }
 
-    relatedSessions.forEach((s) => {
-      objSessionHtml += renderSession(s);
-    });
+    if (SMObject.isAuthenticated()) {
+      //refresh all object related sessions
+      let objSessionHtml = '';
+      let relatedSessions = await SM.listRelatedObjectSessions(objectKey, false);
 
-    //rerfresh all user sessions
-    let sessions = await SM.listUserSessions(null, false);
+      relatedSessions.forEach((s) => {
+        objSessionHtml += renderSession(s);
+      });
 
-    let sessionsHtml = '';
-    sessions.rows.forEach((s) => {
-      sessionsHtml += renderSession(s);
-    });
-
-    document.getElementById('sessions').innerHTML = sessionsHtml;
-    document.getElementById('objsessions').innerHTML = objSessionHtml;
+      document.getElementById('sessions').innerHTML = sessionsHtml;
+    }
 
   }
 
   async function closeSession(id) {
-    await SM.closeSession(id);
+    await SMAdhoc.closeSession(id);
     this.refreshSessions();
   }
 
   function renderSession (session) {
-    let urls = SM.getUrls(session);
+    let urls = SMAdhoc.getUrls(session);
 
     let urlsHTML = '';
 
