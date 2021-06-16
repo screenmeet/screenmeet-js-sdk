@@ -45,12 +45,14 @@ Hello <div id="userinfo"></div>
     "cbdeployments" : true,
     "eventHandlers":{
       authenticated: updateUserInfo,
-      signout: () => { document.getElementById('sessions').innerHTML = ''; },
+      signout: () => { document.getElementById('adhocsessions').innerHTML = ''; },
+      destroyed: () => { document.getElementById('adhocsessions').innerHTML = ''; },
       updated: (sessions) => { renderSessions(sessions, 'adhocsessions') }
     }};
 
   let opts_related = {...opts_adhoc, mode:"object", eventHandlers: {
     signout: () => { document.getElementById('objsessions').innerHTML = ''; },
+    destroyed: () => { document.getElementById('objsessions').innerHTML = ''; },
     updated: (sessions) => { renderSessions(sessions, 'objsessions') }
   }}; //only set up auth handlers for one of the instances
 
@@ -97,7 +99,7 @@ Hello <div id="userinfo"></div>
     try {
       let result = await SMAdhoc.createAdhocSession(type, `My ${type} session`);
       console.log('created adhoc session', result);
-      refreshAdhocSessions();
+      refreshSessions();
     } catch (er) {
       console.error(er);
       console.log('Failed to create session');

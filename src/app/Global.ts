@@ -8,7 +8,8 @@ import {MeResponse} from "../common/types/MeResponse";
 import {ScreenMeetAPI} from "../common/ScreenMeetAPI";
 import {CobrowseDeployment, EndpointConfig} from "../common/types/ConfigTypes";
 import {AuthCodeResponse} from "../common/types/AgentSession";
-import {ScreenMeetOptions} from "./ScreenMeet";
+import ScreenMeet, {ScreenMeetOptions} from "./ScreenMeet";
+import {DiscoveryResponse} from "../common/types/DiscoveryResponse";
 
 const debug = require('debug')('ScreenMeet:Global');
 
@@ -19,8 +20,13 @@ export default class Global extends EventEmitter{
   public me?:MeResponse;
   public options: ScreenMeetOptions;
   public endpoints?: EndpointConfig;
-  public cbdeployments?: Array<CobrowseDeployment>
+  public cbdeployments?: Array<CobrowseDeployment>;
 
+  public instances: {[key:string]:ScreenMeet}={};
+  private lastDiscoveryState: DiscoveryResponse={};
+  //private discoverySessionIds:  { [sessionId:string]:string }; //list of tracked discovery sessions
+  private discoveryIntervalMs:number = 15000;
+  private discoveryInterval:any=null;
   private userDataKey?:string = 'screenmeetuser';
   private sessionExpiresAfter?:Date; /** Date when current session is no longer valid */
   private loginWindow: any;
@@ -114,6 +120,7 @@ export default class Global extends EventEmitter{
     this.emit('signout');
     this.api.signout();
     this.clearUserData();
+    clearInterval(this.discoveryInterval);
   }
 
   /**
@@ -194,6 +201,7 @@ export default class Global extends EventEmitter{
       }
 
       await Promise.all(loadConfigs);
+      this.discoveryInterval = setInterval(this.pollSessionDiscovery, this.discoveryIntervalMs);
     }
     this.emit('authenticated', this.me);
   }
@@ -242,6 +250,63 @@ export default class Global extends EventEmitter{
     this.cbdeployments = await this.api.getCobrowseDeployments(this.me.org.id);
   }
 
+  /**
+   * Tracks the widget instance from the global - used for polling and other kind of global ops possibly.
+   * @param instance
+   */
+  public registerForPolling(instance:ScreenMeet) {
+    this.instances[instance.instance_id] = instance;
+    debug(`[Global] Registered widget instance ${instance.instance_id}`);
+  };
+
+  public unregisterFromPolling(instance:ScreenMeet) {
+    delete this.instances[instance.instance_id];
+    debug(`[Global] UnRegistered widget instance ${instance.instance_id}`);
+  };
+
+  pollSessionDiscovery = async () => {
+    debug('[pollSessionDiscovery] Starting to poll for session state changes');
+    let shouldRefresh = false;
+
+    //gather ID's
+    let idsToPoll = [];
+    for (let wid in this.instances) {
+      let ids = this.instances[wid].trackedSessionIdList;
+      idsToPoll = idsToPoll.concat(ids);
+    }
+    //dedupe
+    let idSet = new Set(idsToPoll);
+    let uniqueIds = [...idSet];
+
+    if (!uniqueIds.length) {
+      debug('[pollSessionDiscovery] no sessions to track')
+      return;
+    } else {
+      debug(`[pollSessionDiscovery] polling ${uniqueIds.length} sessions for activity ${uniqueIds.join(',')}`);
+    }
+
+    let disco = await this.api.pollDiscoveryState(uniqueIds);
+
+    for (let sid in disco) {
+      if (!this.lastDiscoveryState[sid]) {
+        //if we didn't have it in our result from last poll, then we emit it as newly active
+        this.emit('discovery', sid, true);
+      }
+    }
+
+    for (let sid in this.lastDiscoveryState) {
+      if (!disco[sid]) {
+        //the result was in our previous result set, but not in the current discovery, which means it went away
+        this.emit('discovery', sid, false);
+      }
+    }
+
+    this.lastDiscoveryState = disco;
+
+//     if (shouldRefresh) {
+//       debug(`[pollSessionDiscovery] SHOULD REFRESH`);
+//     }
+  }
 
 
 

@@ -8,6 +8,7 @@
     "module": "commonjs",
     "esModuleInterop": false,
     "resolveJsonModule": true,
+    "downlevelIteration" : true,
     "experimentalDecorators": true,
     "target": "es5",
     "lib": [

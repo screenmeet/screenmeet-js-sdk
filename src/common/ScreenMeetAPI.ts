@@ -99,6 +99,13 @@ export class ScreenMeetAPI {
   }
 
   /**
+   *
+   */
+  getSession = async (code:string) : Promise<SupportSession> => {
+    return await this.get(`/supportsession/${code}`, {});
+  }
+
+  /**
    * Returns cobrowse deployments configuration for the organization
    * @param org_id
    */

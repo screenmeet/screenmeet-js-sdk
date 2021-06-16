@@ -32,11 +32,11 @@ export type ScreenMeetOptions = {
 export default class ScreenMeet extends EventEmitter {
   public api: ScreenMeetAPI;
 
-  public trackedSessions?: {[id:string]:SupportSession};
+  public destroyed=false;
+  public instance_id = Math.random().toString(36).substr(2, 5);
+  public trackedSessions?: {[id:string]:SupportSession} = {};
   private lastDiscoveryResult:string='';
-  private discoveryIntervalMs:number = 15000;
-  private discoveryInterval:any=null;
-  private trackedSessionIdList?: Array<string>;
+  public trackedSessionIdList?: Array<string>;
   public global : Global;
 
   public options: ScreenMeetOptions;
@@ -46,27 +46,24 @@ export default class ScreenMeet extends EventEmitter {
     this.options = options;
 
     //Singleton initialization for auth provider
-    if (!window["SMAuthProvider"]) {
+    if (!window["SMGlobal"]) {
       debug('Creating SM Global singleton');
-      window["SMAuthProvider"] = new Global(this.options);
+      window["SMGlobal"] = new Global(this.options);
     } else {
       debug('Creating SM Global singleton already initialized');
     }
 
-    this.global = window["SMAuthProvider"];
+    this.global = window["SMGlobal"];
     this.api = this.global.api;
 
     //proxy events from global to instance level
     this.global.on('authenticated', this.onAuthenticated);
-    this.global.on('signout', this.onSignout)
+    this.global.on('signout', this.onSignout);
+    this.global.on('discovery', this.onDiscovery);
 
     //if we are already globally authenticated when this instance is being created
     if (this.isAuthenticated()) {
       this.onAuthenticated(this.global.me);
-    }
-
-    if (this.options.trackSessionState) {
-      this.discoveryInterval = setInterval(this.pollSessionDiscovery, this.discoveryIntervalMs);
     }
 
     if (options && options.eventHandlers) {
@@ -74,6 +71,9 @@ export default class ScreenMeet extends EventEmitter {
         debug(`Binding handler ${handler} from constructor options eventHandlers`);
         this.on(handler, options.eventHandlers[handler]);
       }
+    }
+    if (this.options.trackSessionState) {
+      this.global.registerForPolling(this);
     }
   }
 
@@ -88,7 +88,7 @@ export default class ScreenMeet extends EventEmitter {
    */
   login = (provider: string, cburl:string, instance:string): Promise<MeResponse> =>  {
 
-    return window["SMAuthProvider"].login(provider, cburl, instance);
+    return window["SMGlobal"].login(provider, cburl, instance);
 
   }
 
@@ -119,7 +119,7 @@ export default class ScreenMeet extends EventEmitter {
    * Syntactic sugar accessor method
    */
   isAuthenticated = () => {
-    return this.global.isAuthenticated;
+    return this.global.isAuthenticated && !this.destroyed;
   }
 
   /**
@@ -223,7 +223,6 @@ export default class ScreenMeet extends EventEmitter {
     let sessionsToTrack = keyby(sessions, 'id');
     this.trackedSessions = sessionsToTrack;
     this.trackedSessionIdList = Object.keys(this.trackedSessions);
-
     this.emit('updated',this.trackedSessions);
 
     debug('Updated tracked sessions. Current list:', this.trackedSessions, 'idlist', this.trackedSessionIdList);
@@ -231,30 +230,29 @@ export default class ScreenMeet extends EventEmitter {
   }
 
   /**
-   * Restores a user session details from local storage
+   * Triggered when discovery polling detects a change in the session state
+   * @param sessionId
+   * @param stateActive
    */
-  // private restoreMe() {
-  //   debug('attempting to restore user session');
-  //   let sessionJson = localStorage.getItem(this.userDataKey);
-  //
-  //   if (sessionJson) {
-  //     debug(`found user data in key ${this.userDataKey}`);
-  //     this.global.me = JSON.parse(sessionJson);
-  //     if (!this.global.me) {
-  //       this.clearUserData();
-  //       return;
-  //     }
-  //     this.onAuthenticated();
-  //     debug('restored user data', this.global.me);
-  //   } else {
-  //     debug('no stored user session found');
-  //   }
-  // }
+  private onDiscovery = async (sessionId:string, stateActive:boolean) => {
+    if (this.trackedSessions[sessionId]) {
+      if (    (this.trackedSessions[sessionId].status !== 'active' && stateActive)
+          ||  (this.trackedSessions[sessionId].status === 'active' && !stateActive)
+      ) {
+        //session state changed
+        let session = await this.api.getSession(sessionId);
+        if (session.status === 'active') {
+          this.trackedSessions[sessionId] = session;
+        } else if (session.status === 'closed') {
+          delete this.trackedSessions[sessionId]
+        }
+        debug(`Session [${sessionId}] status changed to: ${session.status}`);
+        this.emit('sessionstatechanged', session);
+        this.emit('updated', this.trackedSessions);
 
-
-
-
-
+      }
+    }
+  }
 
   public getUrls (session:SupportSession):ScreenMeetUrls {
     if (!this.global.endpoints) {
@@ -285,46 +283,18 @@ export default class ScreenMeet extends EventEmitter {
     }
   }
 
-  pollSessionDiscovery = async () => {
-    debug('[pollSessionDiscovery] Starting to poll for session state changes');
-    let shouldRefresh = false;
-    if (!this.trackedSessionIdList) {
-      debug('[pollSessionDiscovery] no sessions to track')
-      return;
-    }
-    let disco = await this.api.pollDiscoveryState(this.trackedSessionIdList);
-    let discoJSON = JSON.stringify(disco);
-
-    if (this.lastDiscoveryResult && this.lastDiscoveryResult !== discoJSON) {
-      debug('[pollSessionDiscovery] Discovery results changed, should refresh');
-      shouldRefresh = true;
-    } else if (!this.lastDiscoveryResult) {
-      debug('[pollSessionDiscovery] first poll result processing');
-      for (let sessionId in disco) {
-        if (this.trackedSessions[sessionId] && this.trackedSessions[sessionId].status !== 'active') {
-          debug(`[pollSessionDiscovery] status of session on first poll is active for ${sessionId} - should refresh`);
-          shouldRefresh = true;
-        }
-      }
-    }
-
-
-    this.lastDiscoveryResult = discoJSON;
-
-    if (shouldRefresh) {
-      debug(`[pollSessionDiscovery] SHOULD REFRESH`);
-    }
-  }
 
   /**
    * Removes all intervals and event handlers
    */
   destroy() {
+    this.emit('destroyed');
     this.global.off('authenticated', this.onAuthenticated);
     this.global.off('signout', this.onSignout);
-    clearInterval(this.discoveryInterval);
     this.removeAllListeners();
-    this.trackedSessions = null;
+    this.trackedSessions = {};
+    this.global.unregisterFromPolling(this);
+    this.destroyed = true;
   }
 
 
