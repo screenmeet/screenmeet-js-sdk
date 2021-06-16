@@ -42,6 +42,7 @@ Hello <div id="userinfo"></div>
     "persistAuth" : true,
     "trackSessionState" : true, //will poll for session state
     "api_endpoint" : 'https://ea-home-dev.screenmeet.com:3002/v3',
+    "cbdeployments" : true,
     "eventHandlers":{
       authenticated: updateUserInfo,
       signout: () => { document.getElementById('sessions').innerHTML = ''; },

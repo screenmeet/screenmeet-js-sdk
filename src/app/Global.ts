@@ -6,24 +6,28 @@
 import { EventEmitter } from "events";
 import {MeResponse} from "../common/types/MeResponse";
 import {ScreenMeetAPI} from "../common/ScreenMeetAPI";
-import {EndpointConfig} from "../common/types/ConfigTypes";
+import {CobrowseDeployment, EndpointConfig} from "../common/types/ConfigTypes";
 import {AuthCodeResponse} from "../common/types/AgentSession";
 import {ScreenMeetOptions} from "./ScreenMeet";
 
 const debug = require('debug')('ScreenMeet:Global');
 
 export default class Global extends EventEmitter{
-  private userDataKey?:string = 'screenmeetuser';
-  private sessionExpiresAfter?:Date; /** Date when current session is no longer valid */
+
   public isAuthenticated = false;
   public api: ScreenMeetAPI;
   public me?:MeResponse;
   public options: ScreenMeetOptions;
+  public endpoints?: EndpointConfig;
+  public cbdeployments?: Array<CobrowseDeployment>
+
+  private userDataKey?:string = 'screenmeetuser';
+  private sessionExpiresAfter?:Date; /** Date when current session is no longer valid */
   private loginWindow: any;
   private windowWatcher: any;
   private loginPromise?: Promise<any>;
   private loginFail?: (er:Error) => void;
-  public endpoints?: EndpointConfig;
+
 
   constructor(options) {
     super();
@@ -183,7 +187,13 @@ export default class Global extends EventEmitter{
       if(this.options.persistAuth) {
         this.rememberMe();
       }
-      await this.loadEndpointConfig();
+
+      let loadConfigs = [this.loadEndpointConfig()];
+      if (this.options.cbdeployments) {
+        loadConfigs.push(this.loadCobrowseDeployments());
+      }
+
+      await Promise.all(loadConfigs);
     }
     this.emit('authenticated', this.me);
   }
@@ -223,6 +233,13 @@ export default class Global extends EventEmitter{
       throw new Error('Cannot load endpoints while not authenticated');
     }
     this.endpoints = await this.api.getEndpointsConfig(this.me.org.id)
+  }
+
+  async loadCobrowseDeployments() {
+    if (!this.isAuthenticated) {
+      throw new Error('Cannot load cobrowse deployments while not authenticated');
+    }
+    this.cbdeployments = await this.api.getCobrowseDeployments(this.me.org.id);
   }
 
 

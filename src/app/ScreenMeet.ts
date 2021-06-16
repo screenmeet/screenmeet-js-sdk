@@ -21,6 +21,7 @@ export type ScreenMeetOptions = {
   persistAuth?: boolean /** Whether to store session data in local storage. Data will be stored until the session expires. */
   trackSessionState?: boolean /** If this is true, the client will periodically poll for the state of the sessions */
   mode: 'object' | 'adhoc',
+  cbdeployments?: boolean, /** Whether {@link CobrowseDeployment}s should be loaded (for cobrowse customers only) */
   api_endpoint?:string;
   eventHandlers?: {
     authenticated?: (MeResponse) => void

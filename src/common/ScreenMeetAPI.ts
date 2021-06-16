@@ -102,7 +102,7 @@ export class ScreenMeetAPI {
    * Returns cobrowse deployments configuration for the organization
    * @param org_id
    */
-  getCobrowseDeployments = async (org_id: number):Promise<CobrowseDeployment> => {
+  getCobrowseDeployments = async (org_id: number):Promise<Array<CobrowseDeployment>> => {
     return await this.get(`/organization/${org_id}/cobrowsedeployments`);
   }
 
