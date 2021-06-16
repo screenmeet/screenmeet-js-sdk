@@ -41,12 +41,6 @@ export default class ScreenMeet extends EventEmitter {
   public options: ScreenMeetOptions;
   constructor(options:ScreenMeetOptions={'mode' : 'adhoc'}) {
     super();
-    if (options && options.eventHandlers) {
-      for (let handler in options.eventHandlers) {
-        debug(`Binding handler ${handler} from constructor options eventHandlers`);
-        this.on(handler, options.eventHandlers[handler]);
-      }
-    }
 
     this.options = options;
 
@@ -72,6 +66,13 @@ export default class ScreenMeet extends EventEmitter {
 
     if (this.options.trackSessionState) {
       this.discoveryInterval = setInterval(this.pollSessionDiscovery, this.discoveryIntervalMs);
+    }
+
+    if (options && options.eventHandlers) {
+      for (let handler in options.eventHandlers) {
+        debug(`Binding handler ${handler} from constructor options eventHandlers`);
+        this.on(handler, options.eventHandlers[handler]);
+      }
     }
   }
 

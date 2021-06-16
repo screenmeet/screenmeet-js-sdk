@@ -21,12 +21,22 @@ Hello <div id="userinfo"></div>
 
 <br/><br/>
 <b>User Sessions:</b>
-<div id="sessions"></div>
+<div id="adhocsessions"></div>
 <br/><br/>
 <b>Object related sessions:</b><br/>
 <div id="objsessions"></div>
 
 <script>
+
+  function renderSessions(sessions, domElementId) {
+    let sessionsHtml = '';
+    for (let id in sessions) {
+      sessionsHtml += renderSession(sessions[id]);
+    }
+    document.getElementById(domElementId).innerHTML = sessionsHtml;
+  }
+
+
   let opts_adhoc = {
     "mode" : "adhoc",
     "persistAuth" : true,
@@ -34,10 +44,14 @@ Hello <div id="userinfo"></div>
     "api_endpoint" : 'https://ea-home-dev.screenmeet.com:3002/v3',
     "eventHandlers":{
       authenticated: updateUserInfo,
-      signout: updateUserInfo
+      signout: () => { document.getElementById('sessions').innerHTML = ''; },
+      updated: (sessions) => { renderSessions(sessions, 'adhocsessions') }
     }};
 
-  let opts_related = {...opts_adhoc, mode:"object", eventHandlers: {}}; //only set up auth handlers for one of the instances
+  let opts_related = {...opts_adhoc, mode:"object", eventHandlers: {
+    signout: () => { document.getElementById('objsessions').innerHTML = ''; },
+    updated: (sessions) => { renderSessions(sessions, 'objsessions') }
+  }}; //only set up auth handlers for one of the instances
 
   let SMAdhoc = new ScreenMeet(opts_adhoc);
   let SMObject = new ScreenMeet(opts_related);
@@ -80,9 +94,9 @@ Hello <div id="userinfo"></div>
  */
   async function createSession(type) {
     try {
-      let result = await SM.createAdhocSession(type, `My ${type} session`);
-      console.log('created session', result);
-      refreshSessions();
+      let result = await SMAdhoc.createAdhocSession(type, `My ${type} session`);
+      console.log('created adhoc session', result);
+      refreshAdhocSessions();
     } catch (er) {
       console.error(er);
       console.log('Failed to create session');
@@ -94,7 +108,7 @@ Hello <div id="userinfo"></div>
    */
   async function createRelatedSession(type) {
     try {
-      let result = await SM.createRelatedSession(type, `My ${type} session`, {},
+      let result = await SMObject.createRelatedSession(type, `My ${type} session`, {},
         {
           'app ' : 'demoapp',
           'type' : 'case', //object type
@@ -103,7 +117,7 @@ Hello <div id="userinfo"></div>
         },
         objectKey
       );
-      console.log('created session', result);
+      console.log('created objected session', result);
       refreshSessions();
     } catch (er) {
       console.error(er);
@@ -115,10 +129,11 @@ Hello <div id="userinfo"></div>
    * Basic function that updates user name list
    */
   function updateUserInfo(userInfo) {
+    console.log('Updating user info with', userInfo);
     let infoElement = document.getElementById('userinfo');
     if (userInfo && userInfo.user) {
       infoElement.innerHTML = JSON.stringify(userInfo.user);
-      //refreshSessions();
+      refreshSessions();
     } else {
       infoElement.innerText = 'Unauthenticated user';
       // document.getElementById('sessions').innerHTML = '';
@@ -127,31 +142,11 @@ Hello <div id="userinfo"></div>
   }
 
   async function refreshSessions() {
-    if (SMAdhoc.isAuthenticated()) {
-      //rerfresh all user sessions
-      let sessions = await SMAdhoc.listUserSessions(null, false);
 
-      let sessionsHtml = '';
-      sessions.rows.forEach((s) => {
-        sessionsHtml += renderSession(s);
-      });
-
-      document.getElementById('objsessions').innerHTML = objSessionHtml;
-    }
-
-    if (SMObject.isAuthenticated()) {
-      //refresh all object related sessions
-      let objSessionHtml = '';
-      let relatedSessions = await SM.listRelatedObjectSessions(objectKey, false);
-
-      relatedSessions.forEach((s) => {
-        objSessionHtml += renderSession(s);
-      });
-
-      document.getElementById('sessions').innerHTML = sessionsHtml;
-    }
-
+    SMAdhoc.listUserSessions(null, false);
+    SMObject.listRelatedObjectSessions(objectKey, false);
   }
+
 
   async function closeSession(id) {
     await SMAdhoc.closeSession(id);
