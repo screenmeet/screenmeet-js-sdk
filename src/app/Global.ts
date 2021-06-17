@@ -25,6 +25,7 @@ export class Global extends EventEmitter{
   public options: ScreenMeetOptions;
   public endpoints?: EndpointConfig;
   public cbdeployments?: Array<CobrowseDeployment>;
+  public configsLoadedPromise?:Promise<any>;
 
   public instances: {[key:string]:ScreenMeet}={};
   private lastDiscoveryState: DiscoveryResponse={};
@@ -190,23 +191,24 @@ export class Global extends EventEmitter{
    * Runs after a user is successfully authenticated
    */
   private async onAuthenticated() {
-    this.isAuthenticated = true;
+
     this.api.setKey(this.me.session.id);
     this.updateSessionExpireTime(); //this might log user out if session is expired
-    if (this.isAuthenticated) {
-      debug(`User [${this.me.user.name} ${this.me.user.externalId}] authenticated. Session expiration:` + this.sessionExpiresAfter);
-      if(this.options.persistAuth) {
-        this.rememberMe();
-      }
 
-      let loadConfigs = [this.loadEndpointConfig()];
-      if (this.options.cbdeployments) {
-        loadConfigs.push(this.loadCobrowseDeployments());
-      }
-
-      await Promise.all(loadConfigs);
-      this.discoveryInterval = setInterval(this.pollSessionDiscovery, this.discoveryIntervalMs);
+    debug(`User [${this.me.user.name} ${this.me.user.externalId}] authenticated. Session expiration:` + this.sessionExpiresAfter);
+    if(this.options.persistAuth) {
+      this.rememberMe();
     }
+
+    let loadConfigs = [this.loadEndpointConfig()];
+    if (this.options.cbdeployments) {
+      loadConfigs.push(this.loadCobrowseDeployments());
+    }
+
+    await Promise.all(loadConfigs);
+    this.discoveryInterval = setInterval(this.pollSessionDiscovery, this.discoveryIntervalMs);
+
+    this.isAuthenticated = true;
     this.emit('authenticated', this.me);
   }
 
@@ -241,16 +243,10 @@ export class Global extends EventEmitter{
    * session types
    */
   async loadEndpointConfig() {
-    if (!this.isAuthenticated) {
-      throw new Error('Cannot load endpoints while not authenticated');
-    }
     this.endpoints = await this.api.getEndpointsConfig(this.me.org.id)
   }
 
   async loadCobrowseDeployments() {
-    if (!this.isAuthenticated) {
-      throw new Error('Cannot load cobrowse deployments while not authenticated');
-    }
     this.cbdeployments = await this.api.getCobrowseDeployments(this.me.org.id);
   }
 

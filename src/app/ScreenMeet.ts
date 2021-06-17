@@ -272,7 +272,7 @@ export class ScreenMeet extends EventEmitter {
     switch (session.type) {
       case "support":
         return {
-          "invite" : `${conf.activation_base_url}/${session.pin}`,
+          "invite" : `${conf.activation_base_url}${session.pin}`,
           "host" : `${conf.viewer_base_url}?${session.id}#token=${encodeURIComponent(this.global.me.session.id)}`,
           "vanity" : `${conf.vanity_url}`
         }
@@ -299,6 +299,8 @@ export class ScreenMeet extends EventEmitter {
     this.emit('destroyed');
     this.global.off('authenticated', this.onAuthenticated);
     this.global.off('signout', this.onSignout);
+    this.global.off('discovery', this.onDiscovery);
+
     this.removeAllListeners();
     this.trackedSessions = {};
     this.global.unregisterFromPolling(this);
