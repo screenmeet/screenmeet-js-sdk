@@ -1,6 +1,6 @@
 {
   "include": [
-    "src"
+    "src/"
   ],
   "compileOnSave": false,
   "compilerOptions": {
@@ -10,6 +10,7 @@
     "resolveJsonModule": true,
     "downlevelIteration" : true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata" : true,
     "target": "es5",
     "lib": [
       "dom",
@@ -17,7 +18,7 @@
     ]
   },
   "typedocOptions": {
-    "entryPoints": ["src/app/","src/common/"],
+    "entryPoints": ["src/"],
     "out": "docs"
   }
 }

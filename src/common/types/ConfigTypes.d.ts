@@ -10,7 +10,7 @@ export type CobrowseDomain = {
 }
 
 export type CobrowseDeployment = {
-  "id": 1303,
+  "id": number,
   "key": string,
   "name": string,
   "OrganizationId": number,
@@ -32,18 +32,18 @@ export type EndpointConfig = {
     /** Is replay enabled for the org */
     "replay" : true,
     /** The base URL for the remote-support viewer user interface */
-    "viewer_base_url": "https://integration.screenmeet.com/viewer/index.html",
+    "viewer_base_url": string,
     /** The base URL for the remote-support landing page for end-users */
-    "activation_base_url": "https://myhelpscreen.com/",
+    "activation_base_url": string,
     /** The vanity URL that can be given to users by phone to enter their PIN to enter the session */
-    "vanity_url": "myhelpscreen.com",
+    "vanity_url": string,
     /** The agent UI base interface */
-    "agent_portal_base_url": "https://console.screenmeet.com/",
+    "agent_portal_base_url": string,
     /** The base Replay URL used to construct links for end-users */
-    "replay_url":"https://replay-qa.screenmeet.com/"
+    "replay_url":string
     /** The base Live URL used to construct links for end-users and agents */
-    "live_url": "https://live.screenmeet.com/",
+    "live_url": string,
     /** The embedded live URL that can be used to embed the meeting join experience */
-    "embedded_live_url": "https://live.screenmeet.com/"
+    "embedded_live_url": string
   }
 }
