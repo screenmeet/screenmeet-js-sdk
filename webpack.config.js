@@ -3,7 +3,7 @@ var webpack = require('webpack');
 
 module.exports = {
   // your root file
-  entry: './src/app/ScreenMeet.ts',
+  entry: './src/index.ts',
   
   // output JS bundle to: build/bundle.js
   output: {
@@ -29,14 +29,13 @@ module.exports = {
     // Aggressively remove duplicate modules:
     //new webpack.optimize.DedupePlugin(),
 
-  ]).concat(process.env.WEBPACK_ENV==='dev' ? [] : [
+  ]).concat([
     //new webpack.optimize.OccurenceOrderPlugin(),
     
-    // minify the JS bundle
-    // new webpack.optimize.UglifyJsPlugin({
-    //   output: { comments: false },
-    //   exclude: [ /\.min\.js$/gi ]		// skip pre-minified libs
-    // })
+    //minify the JS bundle
+    new webpack.LoaderOptionsPlugin({
+      minimize: true
+    })
   ]),
   
   module: {

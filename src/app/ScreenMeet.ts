@@ -41,7 +41,7 @@ export class ScreenMeet extends EventEmitter {
   public instance_id = Math.random().toString(36).substr(2, 5);
   public trackedSessions?: {[id:string]:SupportSession} = {};
   private lastDiscoveryResult:string='';
-  public trackedSessionIdList?: Array<string>;
+  public trackedSessionIdList?: Array<string>=[];
   public global : Global;
 
   public options: ScreenMeetOptions;
@@ -68,10 +68,7 @@ export class ScreenMeet extends EventEmitter {
     this.global.on('signout', this.onSignout);
     this.global.on('discovery', this.onDiscovery);
 
-    //if we are already globally authenticated when this instance is being created
-    if (this.isAuthenticated()) {
-      this.onAuthenticated(this.global.me);
-    }
+    debug(`Constructing new widget ${this.instance_id} - global auth is: ${this.global.isAuthenticated}`);
 
     if (options && options.eventHandlers) {
       for (let handler in options.eventHandlers) {
@@ -81,6 +78,10 @@ export class ScreenMeet extends EventEmitter {
     }
     if (this.options.trackSessionState) {
       this.global.registerForPolling(this);
+    }
+    //if we are already globally authenticated when this instance is being created
+    if (this.global.isAuthenticated) {
+      this.onAuthenticated(this.global.me);
     }
   }
 
@@ -93,9 +94,9 @@ export class ScreenMeet extends EventEmitter {
    * @param cburl
    * @param instance
    */
-  login = (provider: string, cburl:string, instance:string): Promise<MeResponse> =>  {
+  signin = (provider: string, cburl:string, instance:string): Promise<MeResponse> =>  {
 
-    return window["SMGlobal"].login(provider, cburl, instance);
+    return window["SMGlobal"].signin(provider, cburl, instance);
 
   }
 
@@ -310,3 +311,8 @@ export class ScreenMeet extends EventEmitter {
 //@ts-ignore
 window.ScreenMeet = ScreenMeet;
 export default ScreenMeet;
+
+module.exports = {
+  ScreenMeet : ScreenMeet,
+  ScreenMeetAPI: ScreenMeetAPI
+};

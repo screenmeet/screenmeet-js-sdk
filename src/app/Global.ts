@@ -59,7 +59,7 @@ export class Global extends EventEmitter{
    * @param cburl
    * @param instance
    */
-  login = (provider: string, cburl:string, instance:string): Promise<MeResponse> =>  {
+  signin = (provider: string, cburl:string, instance:string): Promise<MeResponse> =>  {
 
     debug(`Attempting to log in [provider: ${provider} cb: ${cburl} instance:${instance}`);
 
@@ -275,6 +275,7 @@ export class Global extends EventEmitter{
     //gather ID's
     let idsToPoll = [];
     for (let wid in this.instances) {
+      //debug(`${wid} is in this instance list`);
       let ids = this.instances[wid].trackedSessionIdList;
       idsToPoll = idsToPoll.concat(ids);
     }

@@ -71,7 +71,7 @@ Hello <div id="userinfo"></div>
     let instance = 'https://screenmeetdev.zendesk.com'
 
     try {
-      let result = await SMAdhoc.login(provider, cburl, instance);
+      let result = await SMAdhoc.signin(provider, cburl, instance);
       console.log(result);
     } catch (er) {
       console.log('login failed');
@@ -136,7 +136,6 @@ Hello <div id="userinfo"></div>
     let infoElement = document.getElementById('userinfo');
     if (userInfo && userInfo.user) {
       infoElement.innerHTML = JSON.stringify(userInfo.user);
-      refreshSessions();
     } else {
       infoElement.innerText = 'Unauthenticated user';
       // document.getElementById('sessions').innerHTML = '';

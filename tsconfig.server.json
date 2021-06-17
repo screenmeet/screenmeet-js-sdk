@@ -1,6 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["src/app"],
   "compilerOptions": {
     "noEmit": false,
     "outDir": "./lib"
