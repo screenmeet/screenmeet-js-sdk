@@ -21,6 +21,7 @@ export type ReplaySessionAgentPrefs = {}
 export type AgentPrefOptions = SupportSessionAgentPrefs | LiveSessionAgentPrefs | CobrowseSessionAgentPrefs | ReplaySessionAgentPrefs;
 
 export type ParentObject = {
+  id: string,
   app  : string,
   type : string, /** object type */
   name : string, /** name of object - goes into label field */
