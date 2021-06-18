@@ -14,7 +14,8 @@ export type SupportSessionUrls = {
 }
 
 export type CobrowseUrls = {
-
+  "invite"?:string /** The deployment URL entrypoint if configured, pre-configured with a pin */
+  "allcbdeployments"?:Array<string> /** If there are multiple deployment entry URL's will be here, all deployments will be here */
 }
 
 export type LiveUrls = {

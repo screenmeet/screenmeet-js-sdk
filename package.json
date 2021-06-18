@@ -24,9 +24,7 @@
   "scripts": {
     "build:check": "tsc -p .",
     "build:webpack": "webpack --mode=development",
-    "build:publish": "webpack --mode=production; tsc -p ./tsconfig.server.json",
-    "build:server": "tsc -p ./tsconfig.server.json",
-    "test:backend": "tsc -p ./tsconfig.server.json; node test/runtests.js"
+    "build:publish": "webpack --mode=production; tsc -p ./tsconfig.server.json; typedoc"
   },
   "publishConfig": {
     "registry": "https://nexus.screenmeet.com/repository/sm-npm-private/"

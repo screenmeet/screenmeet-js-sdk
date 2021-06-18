@@ -4,7 +4,12 @@ import {MeResponse} from "../common/types/MeResponse";
 import { EventEmitter } from "events";
 import {ScreenMeetSessionType} from "../common/types/Products";
 import {AgentPrefOptions, ParentObject} from "../common/types/NewSessionOptions";
-import {ScreenMeetUrls, SupportSession, SupportSessionListResult} from "../common/types/ScreenMeetSession";
+import {
+  CobrowseUrls,
+  ScreenMeetUrls,
+  SupportSession,
+  SupportSessionListResult
+} from "../common/types/ScreenMeetSession";
 import {SessionPaginationCriteria} from "../common/types/PaginationCriteria";
 import {DiscoveryResponse} from "../common/types/DiscoveryResponse";
 import {Global} from "./Global";
@@ -277,7 +282,24 @@ export class ScreenMeet extends EventEmitter {
           "vanity" : `${conf.vanity_url}`
         }
       case "cobrowse":
-        return {}
+        let result:CobrowseUrls = {};
+        if (this.options.cbdeployments) {
+          let deps = this.global.cbdeployments;
+          if (deps[0] && deps[0].entrypoint) {
+            result["invite"] = `https://${deps[0].entrypoint}#cobrowse_pin=${session.pin}`
+          }
+          if (deps.length > 1) {
+            result.allcbdeployments = [];
+            for (var i=0;i<deps.length;i++) {
+              if (deps[i].entrypoint) {
+                result.allcbdeployments.push(`https://${deps[i].entrypoint}#cobrowse_pin=${session.pin}`);
+              }
+            }
+          }
+        }
+        return result;
+
+
       case "live":
         return {
           "invite" : `${conf.live_url}?${session.id}`,
