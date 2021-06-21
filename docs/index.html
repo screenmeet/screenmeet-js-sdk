@@ -58,44 +58,127 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<a href="#readme" id="readme" style="color: inherit; text-decoration: none;">
-					<h1>README</h1>
+				<a href="#screenmeet-js-sdk" id="screenmeet-js-sdk" style="color: inherit; text-decoration: none;">
+					<h1>ScreenMeet JS SDK</h1>
 				</a>
-				<p>This README would normally document whatever steps are necessary to get your application up and running.</p>
-				<a href="#what-is-this-repository-for" id="what-is-this-repository-for" style="color: inherit; text-decoration: none;">
-					<h3>What is this repository for?</h3>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
 				</a>
-				<ul>
-					<li>Quick summary</li>
-					<li>Version</li>
-					<li><a href="https://bitbucket.org/tutorials/markdowndemo">Learn Markdown</a></li>
-				</ul>
-				<a href="#how-do-i-get-set-up" id="how-do-i-get-set-up" style="color: inherit; text-decoration: none;">
-					<h3>How do I get set up?</h3>
+				<hr>
+				<p>You can install ScreenMeet with your favorite JavaScript package manager software or
+				by cloning the repo from github.</p>
+				<p>NPM:</p>
+				<p><code>npm install @screenmeet/js-sdk</code></p>
+				<p>Yarn</p>
+				<p><code>yarn add @screenmeet/js-sdk</code></p>
+				<p>Git:</p>
+				<p><code>git clone https://github.com/screenmeet/screenmeet-js-sdk.git</code></p>
+				<a href="#initialization" id="initialization" style="color: inherit; text-decoration: none;">
+					<h2>Initialization</h2>
 				</a>
-				<ul>
-					<li>Summary of set up</li>
-					<li>Configuration</li>
-					<li>Dependencies</li>
-					<li>Database configuration</li>
-					<li>How to run tests</li>
-					<li>Deployment instructions</li>
-				</ul>
-				<a href="#contribution-guidelines" id="contribution-guidelines" style="color: inherit; text-decoration: none;">
-					<h3>Contribution guidelines</h3>
+				<p>The current version of the ScreenMeet JS SDK is intended to be used as part of a front-end (browser)
+					application. Some classes can still be used via a back-end, such as the <code>ScreenMeetAPI</code>. However,
+					back-end authentication methods to acquire a session token are not available in this version.
+				This support will be added in a future version of the SDK.</p>
+				<a href="#adding-screenmeet-directly-via-browser" id="adding-screenmeet-directly-via-browser" style="color: inherit; text-decoration: none;">
+					<h3>Adding ScreenMeet directly via browser:</h3>
 				</a>
-				<ul>
-					<li>Writing tests</li>
-					<li>Code review</li>
-					<li>Other guidelines</li>
-				</ul>
-				<a href="#who-do-i-talk-to" id="who-do-i-talk-to" style="color: inherit; text-decoration: none;">
-					<h3>Who do I talk to?</h3>
+				<ol>
+					<li>Copy <code>build/bundle.js</code> into your project / CDN.</li>
+					<li>Add a script tag to the page to your referencing the bundle file. Optionally, you could also
+					use the git CDN to include the ScreenMeet SDK bundle file <code>https://cdn.jsdelivr.net/gh/screenmeet/screenmeet-js-sdk@master/build/bundle.js</code> - we would only recommend doing this in a dev environment.</li>
+				</ol>
+				<pre><code class="language-html"><span style="color: #008000">&lt;!-- when hosting the file yourself --&gt;</span>
+<span style="color: #800000">&lt;script</span><span style="color: #000000FF"> </span><span style="color: #FF0000">src</span><span style="color: #000000FF">=</span><span style="color: #0000FF">&quot;/screenmeet-js-sdk/build/bundle.js&quot;</span><span style="color: #800000">&gt;&lt;/script&gt;</span>
+
+<span style="color: #008000">&lt;!--  directly from CDN: --&gt;</span>
+<span style="color: #800000">&lt;script</span><span style="color: #000000FF"> </span><span style="color: #FF0000">src</span><span style="color: #000000FF">=</span><span style="color: #0000FF">&quot;https://cdn.jsdelivr.net/gh/screenmeet/screenmeet-js-sdk@master/build/bundle.js&quot;</span><span style="color: #800000">&gt;&lt;/script&gt;</span>
+</code></pre>
+				<a href="#including-screenmeet-in-a-react-application" id="including-screenmeet-in-a-react-application" style="color: inherit; text-decoration: none;">
+					<h3>Including ScreenMeet in a React Application:</h3>
 				</a>
-				<ul>
-					<li>Repo owner or admin</li>
-					<li>Other community or team contact</li>
-				</ul>
+				<pre><code class="language-javascript"><span style="color: #AF00DB">import</span><span style="color: #000000"> {</span><span style="color: #001080">ScreenMeet</span><span style="color: #000000">} </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;@screenmeet/js-sdk&quot;</span><span style="color: #000000">;</span>
+</code></pre>
+				<a href="#including-screenmeet-in-a-webpack--js-bundle-build" id="including-screenmeet-in-a-webpack--js-bundle-build" style="color: inherit; text-decoration: none;">
+					<h3>Including ScreenMeet in a Webpack / JS bundle build:</h3>
+				</a>
+				<pre><code class="language-javascript"><span style="color: #0000FF">let</span><span style="color: #000000"> {</span><span style="color: #001080">ScreenMeet</span><span style="color: #000000">} = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;@screenmeet/js-sdk&quot;</span><span style="color: #000000">);</span>
+</code></pre>
+				<a href="#configuring-the-screenmeet-object" id="configuring-the-screenmeet-object" style="color: inherit; text-decoration: none;">
+					<h3>Configuring the ScreenMeet Object</h3>
+				</a>
+				<p>ScreenMeet sessions can be created in 2 ways: <strong>standalone</strong> or <strong>related to an object</strong>.
+					Stand-alone mode can be used to create adchoc sessions where the user just wants to create a
+					ScreenMeet session without it belonging to some other entity such as a Case. When using
+					related mode, some metadata about the object will be stored along with the ScreenMeet session,
+				sessions related to that object can then be queries easily by its global unique key.</p>
+				<a href="#adhoc-mode" id="adhoc-mode" style="color: inherit; text-decoration: none;">
+					<h4>Adhoc mode</h4>
+				</a>
+				<pre><code class="language-javascript"><span style="color: #008000">//this example assumes the user is already authenticated</span>
+
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">sm_global_opts</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;mode&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;adhoc&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;persistAuth&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;trackSessionState&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">, </span><span style="color: #008000">//will poll for session states for all widgets</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;cbdeployments&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000"> </span><span style="color: #008000">//whether to fetch cobrowse configuration data if using this product</span>
+<span style="color: #000000">};</span>
+
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">smAdhoc</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">ScreenMeet</span><span style="color: #000000">(</span><span style="color: #001080">sm_global_opts</span><span style="color: #000000">);</span>
+<span style="color: #008000">//creating an adhoc session</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">mySession</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">smAdhoc</span><span style="color: #000000">.</span><span style="color: #795E26">createAdhocSession</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;cobrowse&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;My cobrwose session&quot;</span><span style="color: #000000">);</span>
+</code></pre>
+				<a href="#object-mode" id="object-mode" style="color: inherit; text-decoration: none;">
+					<h4>Object mode</h4>
+				</a>
+				<pre><code class="language-javascript"><span style="color: #008000">//this example assumes the user is already authenticated</span>
+
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">sm_related_opts</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;mode&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;object&quot;</span><span style="color: #000000">, </span><span style="color: #008000">//the mode parameter must be &quot;object&quot;</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;persistAuth&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;trackSessionState&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">, </span><span style="color: #008000">//will poll for session states for all widgets</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;cbdeployments&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000"> </span><span style="color: #008000">//whether to fetch cobrowse configuration data if using this product</span>
+<span style="color: #000000">};</span>
+
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">smForObject</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">ScreenMeet</span><span style="color: #000000">(</span><span style="color: #001080">sm_related_opts</span><span style="color: #000000">);</span>
+
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">parentObject</span><span style="color: #000000"> =  {</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #001080"> :</span><span style="color: #000000">   </span><span style="color: #A31515">&quot;sfj48wtej9i&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;app &#039;</span><span style="color: #001080"> :</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;spiffycrmapp&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;type&#039;</span><span style="color: #001080"> :</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;case&quot;</span><span style="color: #000000">, </span><span style="color: #008000">//object type</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;name&#039;</span><span style="color: #001080"> :</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;Case 12345&quot;</span><span style="color: #000000">, </span><span style="color: #008000">//name of object - goes into label field</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;sync&#039;</span><span style="color: #001080"> :</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000"> </span><span style="color: #008000">//whether eager back-end sync should happen (not yet supported)</span>
+<span style="color: #000000">};</span>
+
+<span style="color: #008000">//create a globally unique key for your object</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">objectKey</span><span style="color: #000000"> = </span><span style="color: #A31515">&quot;spiffycrm.joesdevinstance.case.sfj48wtej9i&quot;</span><span style="color: #000000">;</span>
+
+<span style="color: #008000">//creating an adhoc session</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">myRelatedSession</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">smForObject</span><span style="color: #000000">.</span><span style="color: #795E26">createRelatedSession</span><span style="color: #000000">( </span><span style="color: #A31515">&quot;cobrowse&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;Cobrowse for case sfj48wtej9i&quot;</span><span style="color: #000000">,  {</span><span style="color: #A31515">&quot;record&quot;</span><span style="color: #001080"> :</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">}, </span><span style="color: #001080">parentObject</span><span style="color: #000000">, </span><span style="color: #001080">objectKey</span><span style="color: #000000">);</span>
+</code></pre>
+				<a href="#fetching-sessions" id="fetching-sessions" style="color: inherit; text-decoration: none;">
+					<h4>Fetching Sessions</h4>
+				</a>
+				<p>There are two methods available for fetching sessions from the API. Fetching sessions for an Adhoc mode instance
+					will return ALL sessions belonging to the authenticated user. This includes any object-related sessions. Fetching
+				sessions for a related object will only return the sessions which match the objectKey used to create those sessions.</p>
+				<p>When sessions the retreived, the <code>updated</code> event will also fire on the ScreenMeet object, passing the retreived session
+				list as the 1st parameter.</p>
+				<pre><code class="language-javascript"><span style="color: #008000">//Fetching adhoc (all user sessions) via a promise - will return up to 20 sessions - pagination is available</span>
+<span style="color: #008000">// (see api reference):</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">mySessions</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">smAdhoc</span><span style="color: #000000">.</span><span style="color: #795E26">listUserSessions</span><span style="color: #000000">();</span>
+
+<span style="color: #008000">//Fetching related sessions for an object. Takes the object key as a parameter and returns a promise</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">myCaseRelatedSessions</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">smForObject</span><span style="color: #000000">.</span><span style="color: #795E26">listRelatedObjectSessions</span><span style="color: #000000">(</span><span style="color: #001080">objectKey</span><span style="color: #000000">);</span>
+
+<span style="color: #008000">//Getting sessions via event handler:</span>
+
+<span style="color: #008000">//bind the &quot;updated&quot; event - will fire whenever the session list is updated via a list operation or automatic polling</span>
+<span style="color: #001080">smForObject</span><span style="color: #000000">.</span><span style="color: #795E26">on</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;updated&quot;</span><span style="color: #000000">, (</span><span style="color: #001080">sessions</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> { </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">sessions</span><span style="color: #000000"> ) });</span>
+<span style="color: #001080">smForObject</span><span style="color: #000000">.</span><span style="color: #795E26">listRelatedObjectSessions</span><span style="color: #000000">(</span><span style="color: #001080">objectKey</span><span style="color: #000000">); </span><span style="color: #008000">//force the list refresh</span>
+
+
+</code></pre>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
