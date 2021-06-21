@@ -39,13 +39,13 @@ use the git CDN to include the ScreenMeet SDK bundle file ```https://cdn.jsdeliv
 ```
  
 ### Including ScreenMeet in a React Application:
-```ecmascript 6
+```javascript
 import {ScreenMeet} from "@screenmeet/js-sdk";
 ```
 
 ### Including ScreenMeet in a Webpack / JS bundle build:
 
-```ecmascript 6
+```javascript
 let {ScreenMeet} = require("@screenmeet/js-sdk");
 ```
         
@@ -59,7 +59,7 @@ sessions related to that object can then be queries easily by its global unique 
 
 #### Standalone mode ####
 
-```ecmascript 6
+```javascript
     //this example assumes the user is already authenticated
 
     let sm_global_opts = {
@@ -76,7 +76,7 @@ sessions related to that object can then be queries easily by its global unique 
 
 #### Standalone mode ####
 
-```ecmascript 6
+```javascript
     //this example assumes the user is already authenticated
 
     let sm_related_opts = {
