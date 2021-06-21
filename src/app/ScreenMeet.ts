@@ -37,7 +37,17 @@ export type ScreenMeetOptions = {
 /**
  * This is a browser-only class.
  * Creates a ScreenMeet object which can be used to render session information to an UI.
- * Will automatically intantiate a {@link Global} instance when constructed
+ * Will automatically intantiate a {@link Global} instance when constructed. Emits the following events:
+ *
+ * ## Events
+ *
+ * |Event|Params|Description|
+ * |-----|-----|------------|
+ * |**authenticated**| {@link Global.me} |emitted when a user is authenticated|
+ * |**updated**|{@link ScreenMeet.trackedSessions}|emitted when the tracked session list is updated
+ * |**sessionstatechanged**|{@link SupportSession}|emitted if {@link ScreenMeetOptions.trackSessionState} is enabled and the session state changes
+ * |**signout**| |emitted when a user signs out|
+ * |**destroyed**| |emitted when the object id destroyed via {@link ScreenMeet.destroy}|
  */
 export class ScreenMeet extends EventEmitter {
   public api: ScreenMeetAPI;
