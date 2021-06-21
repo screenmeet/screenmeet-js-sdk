@@ -1,7 +1,6 @@
 # ScreenMeet JS SDK #
 
 ## Installation
----
 You can install ScreenMeet with your favorite JavaScript package manager software or
 by cloning the repo from github.
 
@@ -16,6 +15,11 @@ Yarn
 Git:
 
 ```git clone https://github.com/screenmeet/screenmeet-js-sdk.git```
+
+## API Reference
+You can view the full API reference here:
+
+https://screenmeet.github.io/screenmeet-js-sdk/classes/app_screenmeet.screenmeet.html
 
 ## Initialization
 
@@ -48,7 +52,39 @@ import {ScreenMeet} from "@screenmeet/js-sdk";
 ```javascript
 let {ScreenMeet} = require("@screenmeet/js-sdk");
 ```
-        
+
+## Authentication
+
+### Callback file
+Included in the project is a file called `examples/oauth_cb.html` - this file acts as a cross-domain authentication
+callback receiver to authenticate users via supported identity providers. This file has to be hosted on the **same domain**
+as your front-end applicaiton for authentication to work properly. A URL referencing this file will be required when
+invoking authentication.
+
+### Authenticating with a supported provider
+The ScreenMeet SDK will manage end-user authenticaiton for you for supported identity providers. In a future release,
+additional authenticaiton options will be provided if you would like to use your own identity provider for authentication.
+Simply invoke [ScreenMeetMain.signin(provider, cburl, instance)](https://screenmeet.github.io/screenmeet-js-sdk/classes/app_screenmeet.screenmeet.html#signin) to invoke an oauth sign-in to the chosen provider.
+
+**Example**
+```javascript
+
+let cburl = document.location.origin + '/oauth_cb.html'; //oauth callback file
+let provider = 'sfdc'; //provider
+let instance = 'https://login.salesforce.com/' //provider instance (if supported)
+
+try {
+  let result = await this.ScreenMeetMain.signin(provider, cburl,instance);
+  console.log('Login result', result);
+} catch (er) {
+  console.log('login failed');
+  console.error(er);
+}
+```
+
+ 
+## Session Creation and listing
+
 ### Configuring the ScreenMeet Object
 
 ScreenMeet sessions can be created in 2 ways: **standalone** or **related to an object**.
@@ -126,6 +162,20 @@ let myCaseRelatedSessions = await smForObject.listRelatedObjectSessions(objectKe
 //bind the "updated" event - will fire whenever the session list is updated via a list operation or automatic polling
 smForObject.on("updated", (sessions) => { console.log(sessions ) });
 smForObject.listRelatedObjectSessions(objectKey); //force the list refresh
-
-
 ```
+
+## Automatic state polling
+If the `trackSessionState` option is true when you created your ScreenMeet object, then ScreenMeet
+will automatically poll the ScreenMeet back-end for the session state. When a session changes state
+from `new` to `active` a `sessionstatechanged` event will be emitted from the ScreenMeet Object.
+An `updated` event will also be emitted.
+
+## Examples
+
+Basic HTML example (should be run via web server, not via file://)
+
+https://github.com/screenmeet/screenmeet-js-sdk/tree/master/example
+
+React App Example:
+
+https://github.com/screenmeet/screenmeet-js-sdk-react-demo

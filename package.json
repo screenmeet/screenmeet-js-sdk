@@ -1,6 +1,6 @@
 {
   "name": "@screenmeet/js-sdk",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "The ScreenMeet JavaScript SDK is a REST API wrapper to interact with ScreenMeet API's to authenticate usesr, create, join, schedule, delete, and track session state.",
   "main": "./lib/index.js",
   "repository": "https://github.com/screenmeet/screenmeet-js-sdk",

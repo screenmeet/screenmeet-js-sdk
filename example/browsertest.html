@@ -41,17 +41,16 @@ Hello <div id="userinfo"></div>
     "mode" : "adhoc",
     "persistAuth" : true,
     "trackSessionState" : true, //will poll for session state
-    "api_endpoint" : 'https://ea-home-dev.screenmeet.com:3002/v3',
     "cbdeployments" : true,
     "eventHandlers":{
       authenticated: updateUserInfo,
-      signout: () => { document.getElementById('adhocsessions').innerHTML = ''; },
+      signout: () => { updateUserInfo(null); },
       destroyed: () => { document.getElementById('adhocsessions').innerHTML = ''; },
       updated: (sessions) => { renderSessions(sessions, 'adhocsessions') }
     }};
 
   let opts_related = {...opts_adhoc, mode:"object", eventHandlers: {
-    signout: () => { document.getElementById('objsessions').innerHTML = ''; },
+    // signout: () => { document.getElementById('objsessions').innerHTML = ''; },
     destroyed: () => { document.getElementById('objsessions').innerHTML = ''; },
     updated: (sessions) => { renderSessions(sessions, 'objsessions') }
   }}; //only set up auth handlers for one of the instances
@@ -66,9 +65,9 @@ Hello <div id="userinfo"></div>
    */
   async function  doLogin() {
 
-    let cburl = 'https://ea-home-dev.screenmeet.com:3056/test/oauth_cb.html';
-    let provider = 'zendesk';
-    let instance = 'https://screenmeetdev.zendesk.com'
+    let cburl = document.location.origin + '/example/oauth_cb.html';
+    let provider = 'azure';
+    let instance = '*'
 
     try {
       let result = await SMAdhoc.signin(provider, cburl, instance);
@@ -137,10 +136,11 @@ Hello <div id="userinfo"></div>
     let infoElement = document.getElementById('userinfo');
     if (userInfo && userInfo.user) {
       infoElement.innerHTML = JSON.stringify(userInfo.user);
+      refreshSessions();
     } else {
-      infoElement.innerText = 'Unauthenticated user';
-      // document.getElementById('sessions').innerHTML = '';
-      // document.getElementById('objsessions').innerHTML = '';
+       infoElement.innerText = 'Unauthenticated user';
+       document.getElementById('adhocsessions').innerHTML = '';
+       document.getElementById('objsessions').innerHTML = '';
     }
   }
 

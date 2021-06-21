@@ -64,7 +64,6 @@
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
 				</a>
-				<hr>
 				<p>You can install ScreenMeet with your favorite JavaScript package manager software or
 				by cloning the repo from github.</p>
 				<p>NPM:</p>
@@ -73,6 +72,11 @@
 				<p><code>yarn add @screenmeet/js-sdk</code></p>
 				<p>Git:</p>
 				<p><code>git clone https://github.com/screenmeet/screenmeet-js-sdk.git</code></p>
+				<a href="#api-reference" id="api-reference" style="color: inherit; text-decoration: none;">
+					<h2>API Reference</h2>
+				</a>
+				<p>You can view the full API reference here:</p>
+				<p><a href="https://screenmeet.github.io/screenmeet-js-sdk/classes/app_screenmeet.screenmeet.html">https://screenmeet.github.io/screenmeet-js-sdk/classes/app_screenmeet.screenmeet.html</a></p>
 				<a href="#initialization" id="initialization" style="color: inherit; text-decoration: none;">
 					<h2>Initialization</h2>
 				</a>
@@ -104,6 +108,39 @@
 				</a>
 				<pre><code class="language-javascript"><span style="color: #0000FF">let</span><span style="color: #000000"> {</span><span style="color: #001080">ScreenMeet</span><span style="color: #000000">} = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;@screenmeet/js-sdk&quot;</span><span style="color: #000000">);</span>
 </code></pre>
+				<a href="#authentication" id="authentication" style="color: inherit; text-decoration: none;">
+					<h2>Authentication</h2>
+				</a>
+				<a href="#callback-file" id="callback-file" style="color: inherit; text-decoration: none;">
+					<h3>Callback file</h3>
+				</a>
+				<p>Included in the project is a file called <code>examples/oauth_cb.html</code> - this file acts as a cross-domain authentication
+					callback receiver to authenticate users via supported identity providers. This file has to be hosted on the <strong>same domain</strong>
+					as your front-end applicaiton for authentication to work properly. A URL referencing this file will be required when
+				invoking authentication.</p>
+				<a href="#authenticating-with-a-supported-provider" id="authenticating-with-a-supported-provider" style="color: inherit; text-decoration: none;">
+					<h3>Authenticating with a supported provider</h3>
+				</a>
+				<p>The ScreenMeet SDK will manage end-user authenticaiton for you for supported identity providers. In a future release,
+					additional authenticaiton options will be provided if you would like to use your own identity provider for authentication.
+				Simply invoke <a href="https://screenmeet.github.io/screenmeet-js-sdk/classes/app_screenmeet.screenmeet.html#signin">ScreenMeetMain.signin(provider, cburl, instance)</a> to invoke an oauth sign-in to the chosen provider.</p>
+				<p><strong>Example</strong></p>
+				<pre><code class="language-javascript">
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">cburl</span><span style="color: #000000"> = </span><span style="color: #001080">document</span><span style="color: #000000">.</span><span style="color: #001080">location</span><span style="color: #000000">.</span><span style="color: #001080">origin</span><span style="color: #000000"> + </span><span style="color: #A31515">&#039;/oauth_cb.html&#039;</span><span style="color: #000000">; </span><span style="color: #008000">//oauth callback file</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">provider</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;sfdc&#039;</span><span style="color: #000000">; </span><span style="color: #008000">//provider</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">instance</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;https://login.salesforce.com/&#039;</span><span style="color: #000000"> </span><span style="color: #008000">//provider instance (if supported)</span>
+
+<span style="color: #AF00DB">try</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">result</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #0000FF">this</span><span style="color: #000000">.</span><span style="color: #001080">ScreenMeetMain</span><span style="color: #000000">.</span><span style="color: #795E26">signin</span><span style="color: #000000">(</span><span style="color: #001080">provider</span><span style="color: #000000">, </span><span style="color: #001080">cburl</span><span style="color: #000000">,</span><span style="color: #001080">instance</span><span style="color: #000000">);</span>
+<span style="color: #000000">  </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Login result&#039;</span><span style="color: #000000">, </span><span style="color: #001080">result</span><span style="color: #000000">);</span>
+<span style="color: #000000">} </span><span style="color: #AF00DB">catch</span><span style="color: #000000"> (</span><span style="color: #001080">er</span><span style="color: #000000">) {</span>
+<span style="color: #000000">  </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;login failed&#039;</span><span style="color: #000000">);</span>
+<span style="color: #000000">  </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">error</span><span style="color: #000000">(</span><span style="color: #001080">er</span><span style="color: #000000">);</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<a href="#session-creation-and-listing" id="session-creation-and-listing" style="color: inherit; text-decoration: none;">
+					<h2>Session Creation and listing</h2>
+				</a>
 				<a href="#configuring-the-screenmeet-object" id="configuring-the-screenmeet-object" style="color: inherit; text-decoration: none;">
 					<h3>Configuring the ScreenMeet Object</h3>
 				</a>
@@ -176,9 +213,14 @@
 <span style="color: #008000">//bind the &quot;updated&quot; event - will fire whenever the session list is updated via a list operation or automatic polling</span>
 <span style="color: #001080">smForObject</span><span style="color: #000000">.</span><span style="color: #795E26">on</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;updated&quot;</span><span style="color: #000000">, (</span><span style="color: #001080">sessions</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> { </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">sessions</span><span style="color: #000000"> ) });</span>
 <span style="color: #001080">smForObject</span><span style="color: #000000">.</span><span style="color: #795E26">listRelatedObjectSessions</span><span style="color: #000000">(</span><span style="color: #001080">objectKey</span><span style="color: #000000">); </span><span style="color: #008000">//force the list refresh</span>
-
-
 </code></pre>
+				<a href="#automatic-state-polling" id="automatic-state-polling" style="color: inherit; text-decoration: none;">
+					<h2>Automatic state polling</h2>
+				</a>
+				<p>If the <code>trackSessionState</code> option is true when you created your ScreenMeet object, then ScreenMeet
+					will automatically poll the ScreenMeet back-end for the session state. When a session changes state
+					from <code>new</code> to <code>active</code> a <code>sessionstatechanged</code> event will be emitted from the ScreenMeet Object.
+				An <code>updated</code> event will also be emitted </p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
