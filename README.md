@@ -31,11 +31,11 @@ This support will be added in a future version of the SDK.
 use the git CDN to include the ScreenMeet SDK bundle file ```https://cdn.jsdelivr.net/gh/screenmeet/screenmeet-js-sdk@master/build/bundle.js``` - we would only recommend doing this in a dev environment.
 
 ```html
-    <!-- when hosting the file yourself -->
-    <script src="/screenmeet-js-sdk/build/bundle.js"></script>
-    
-    <!--  directly from CDN: -->
-    <script src="https://cdn.jsdelivr.net/gh/screenmeet/screenmeet-js-sdk@master/build/bundle.js"></script>
+<!-- when hosting the file yourself -->
+<script src="/screenmeet-js-sdk/build/bundle.js"></script>
+
+<!--  directly from CDN: -->
+<script src="https://cdn.jsdelivr.net/gh/screenmeet/screenmeet-js-sdk@master/build/bundle.js"></script>
 ```
  
 ### Including ScreenMeet in a React Application:
@@ -57,48 +57,75 @@ ScreenMeet session without it belonging to some other entity such as a Case. Whe
 related mode, some metadata about the object will be stored along with the ScreenMeet session,
 sessions related to that object can then be queries easily by its global unique key.
 
-#### Standalone mode ####
+#### Adhoc mode
 
 ```javascript
-    //this example assumes the user is already authenticated
+//this example assumes the user is already authenticated
 
-    let sm_global_opts = {
-        "mode": "adhoc",
-        "persistAuth": true,
-        "trackSessionState": true, //will poll for session states for all widgets
-        "cbdeployments": true //whether to fetch cobrowse configuration data if using this product
-    };
+let sm_global_opts = {
+    "mode": "adhoc",
+    "persistAuth": true,
+    "trackSessionState": true, //will poll for session states for all widgets
+    "cbdeployments": true //whether to fetch cobrowse configuration data if using this product
+};
 
-    let smadhoc = new ScreenMeet(sm_global_opts);
-    //creating an adhoc session
-    let mysSession = await smadhoc.createAdhocSession("cobrowse", "My cobrwose session");
+let smAdhoc = new ScreenMeet(sm_global_opts);
+//creating an adhoc session
+let mySession = await smAdhoc.createAdhocSession("cobrowse", "My cobrwose session");
 ```
 
-#### Standalone mode ####
+#### Object mode
 
 ```javascript
-    //this example assumes the user is already authenticated
+//this example assumes the user is already authenticated
 
-    let sm_related_opts = {
-        "mode": "object", //the mode parameter must be "object"
-        "persistAuth": true,
-        "trackSessionState": true, //will poll for session states for all widgets
-        "cbdeployments": true //whether to fetch cobrowse configuration data if using this product
-    };
+let sm_related_opts = {
+    "mode": "object", //the mode parameter must be "object"
+    "persistAuth": true,
+    "trackSessionState": true, //will poll for session states for all widgets
+    "cbdeployments": true //whether to fetch cobrowse configuration data if using this product
+};
 
-    let smForObject = new ScreenMeet(sm_related_opts);
+let smForObject = new ScreenMeet(sm_related_opts);
 
-    let parentObject =  {
-        'id' :   "sfj48wtej9i",
-        'app ' : "spiffycrmapp",
-        'type' : "case", //object type
-        'name' : "", //name of object - goes into label field
-        'sync' : false //whether eager back-end sync should happen (not yet supported)
-    };
-  
-    //create a globally unique key for your object
-    let objectKey = "spiffycrm.joesdevinstance.case.sfj48wtej9i";
+let parentObject =  {
+    'id' :   "sfj48wtej9i",
+    'app ' : "spiffycrmapp",
+    'type' : "case", //object type
+    'name' : "Case 12345", //name of object - goes into label field
+    'sync' : false //whether eager back-end sync should happen (not yet supported)
+};
 
-    //creating an adhoc session
-    let myRelatedSession = await smForObject.createRelatedSession( "cobrowse", "Cobrowse for case sfj48wtej9i",  {"record" : true}, parentObject, objectKey);
+//create a globally unique key for your object
+let objectKey = "spiffycrm.joesdevinstance.case.sfj48wtej9i";
+
+//creating an adhoc session
+let myRelatedSession = await smForObject.createRelatedSession( "cobrowse", "Cobrowse for case sfj48wtej9i",  {"record" : true}, parentObject, objectKey);
+```
+
+
+#### Fetching Sessions
+
+There are two methods available for fetching sessions from the API. Fetching sessions for an Adhoc mode instance
+will return ALL sessions belonging to the authenticated user. This includes any object-related sessions. Fetching
+sessions for a related object will only return the sessions which match the objectKey used to create those sessions.
+
+When sessions the retreived, the `updated` event will also fire on the ScreenMeet object, passing the retreived session
+list as the 1st parameter.
+
+```javascript
+//Fetching adhoc (all user sessions) via a promise - will return up to 20 sessions - pagination is available
+// (see api reference):
+let mySessions = await smAdhoc.listUserSessions();
+
+//Fetching related sessions for an object. Takes the object key as a parameter and returns a promise
+let myCaseRelatedSessions = await smForObject.listRelatedObjectSessions(objectKey);
+
+//Getting sessions via event handler:
+
+//bind the "updated" event - will fire whenever the session list is updated via a list operation or automatic polling
+smForObject.on("updated", (sessions) => { console.log(sessions ) });
+smForObject.listRelatedObjectSessions(objectKey); //force the list refresh
+
+
 ```
