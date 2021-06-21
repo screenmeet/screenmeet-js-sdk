@@ -27,7 +27,19 @@ This support will be added in a future version of the SDK.
 ### Adding ScreenMeet directly via browser:
 
 1. Copy ```build/bundle.js``` into your project / CDN.
-2. 
+2. Add a script tag to the page to your referencing the bundle file. Optionally, you could also
+use the git CDN to include the ScreenMeet SDK bundle file ```https://cdn.jsdelivr.net/gh/screenmeet/screenmeet-js-sdk@master/build/bundle.js``` - we would only recommend doing this in a dev environment.
 
-### Including ScreenMeet in a React:
+        //when hosting the file yourself
+        <script src="/screenmeet-js-sdk/build/bundle.js></script>
+        
+        //directly from CDN:
+        <script src="https://cdn.jsdelivr.net/gh/screenmeet/screenmeet-js-sdk@master/build/bundle.js"></script> 
 
+### Including ScreenMeet in a React Application:
+
+        import {ScreenMeet} from "@screenmeet/js-sdk";
+        
+### Including ScreenMeet in a Webpack / JS bundle build:
+
+        let {ScreenMeet} = require("@screenmeet/js-sdk");
