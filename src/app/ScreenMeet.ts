@@ -2,7 +2,7 @@ import {ScreenMeetAPI} from '../common/ScreenMeetAPI';
 import {AuthCodeResponse} from "../common/types/AgentSession";
 import {MeResponse} from "../common/types/MeResponse";
 import { EventEmitter } from "events";
-import {ScreenMeetSessionType} from "../common/types/Products";
+import {ScreenMeetSessionType, AgentPrefProductOptions } from "../common/types/Products";
 import {AgentPrefOptions, ParentObject} from "../common/types/NewSessionOptions";
 import {
   CobrowseUrls,
@@ -13,11 +13,17 @@ import {
 import {SessionPaginationCriteria} from "../common/types/PaginationCriteria";
 import {DiscoveryResponse} from "../common/types/DiscoveryResponse";
 import {Global} from "./Global";
+import Debug from "debug";
+const debug = Debug('ScreenMeet:main');
 const keyby = require('lodash.keyby');
-const debug = require('debug')('ScreenMeet:main');
 
-
-
+const AgentPrefLabels =  {
+  'knock' : 'Knock to join session',
+  'record' : 'Record session',
+  'audio' : 'Audio Enabled',
+  'prerequestrc' : 'Start with Remote Control',
+  'prerequestadmin' : 'Start with Admin'
+}
 
 /**
  * Options of initializing the screenmeet object
@@ -55,7 +61,6 @@ export class ScreenMeet extends EventEmitter {
   public destroyed=false;
   public instance_id = Math.random().toString(36).substr(2, 5);
   public trackedSessions?: {[id:string]:SupportSession} = {};
-  private lastDiscoveryResult:string='';
   public trackedSessionIdList?: Array<string>=[];
   public global : Global;
 
@@ -277,6 +282,10 @@ export class ScreenMeet extends EventEmitter {
     }
   }
 
+  /**
+   * Returns various URL endpoints for a session. Results will vary depending on the session type.
+   * @param session
+   */
   public getUrls (session:SupportSession):ScreenMeetUrls {
     if (!this.global.endpoints) {
       throw new Error(`Cannot create ScreenMeet URLs before endpoint config is loaded`);
@@ -321,6 +330,30 @@ export class ScreenMeet extends EventEmitter {
           "invite" : `${conf.replay_url}${session.id}`
         }
     }
+  }
+
+  /**
+   * Returns an option list for preferences that the agent can control when creating a session
+   * @param session
+   */
+  getSessionPrefOptions(type:ScreenMeetSessionType):Array<AgentPrefProductOptions> {
+    let opts = this.global.me.products[type];
+
+    if (!opts) {
+      return [];
+    } else {
+      let output = [];
+      for (let opt in opts) {
+        if (opts[opt]) {
+          output.push({
+            'name' : opt,
+            'label' : AgentPrefLabels[opt]
+          });
+        }
+      }
+      return output;
+    }
+
   }
 
 

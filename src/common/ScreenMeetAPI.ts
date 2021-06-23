@@ -6,7 +6,8 @@ import {SupportSession,SupportSessionListResult} from "./types/ScreenMeetSession
 import {SessionPaginationCriteria} from "./types/PaginationCriteria";
 import {CobrowseDeployment,EndpointConfig} from "./types/ConfigTypes";
 import {DiscoveryResponse} from "./types/DiscoveryResponse";
-const debug = require('debug')('ScreenMeet:api');
+// import Debug from "debug";
+// const debug = Debug('ScreenMeet:api');
 
 
 const querystring = require('querystring');
