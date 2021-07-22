@@ -14,6 +14,7 @@ export type SupportSessionUrls = {
 }
 
 export type CobrowseUrls = {
+  "host" : string /** The host URL can be opened for the agent to join the session once it is active. Please note that this URL contains an authentication token, and as such, should not be presented to the user where it can be easily copy/pasted. We recommend using window.open from the UI. */
   "invite"?:string /** The deployment URL entrypoint if configured, pre-configured with a pin */
   "allcbdeployments"?:Array<string> /** If there are multiple deployment entry URL's will be here, all deployments will be here */
 }

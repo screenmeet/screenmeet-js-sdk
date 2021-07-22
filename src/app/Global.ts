@@ -195,6 +195,9 @@ export class Global extends EventEmitter{
     this.api.setKey(this.me.session.id);
     this.updateSessionExpireTime(); //this might log user out if session is expired
 
+    if (!this.isAuthenticated) {
+      return;
+    }
     debug(`User [${this.me.user.name} ${this.me.user.externalId}] authenticated. Session expiration:` + this.sessionExpiresAfter);
     if(this.options.persistAuth) {
       this.rememberMe();

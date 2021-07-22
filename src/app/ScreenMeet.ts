@@ -301,7 +301,9 @@ export class ScreenMeet extends EventEmitter {
           "vanity" : `${conf.vanity_url}`
         }
       case "cobrowse":
-        let result:CobrowseUrls = {};
+        let result:CobrowseUrls = {
+          "host" : `${conf.viewer_base_url}?${session.id}#token=${encodeURIComponent(this.global.me.session.id)}`
+        };
         if (this.options.cbdeployments) {
           let deps = this.global.cbdeployments;
           if (deps[0] && deps[0].entrypoint) {
