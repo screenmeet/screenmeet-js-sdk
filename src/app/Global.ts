@@ -106,7 +106,7 @@ export class Global extends EventEmitter{
 
         let me:MeResponse = await this.api.authWithOauthCode(provider, authData.code, instance);
 
-        debug(`Received login user data`)
+        debug(`Received login user data:`, me)
 
         this.me = me;
         this.onAuthenticated();
@@ -153,6 +153,7 @@ export class Global extends EventEmitter{
    * Removes any stored user session data from this object
    */
   private clearUserData() {
+    debug(`[clearUserData]`);
     this.emit('signout');
     this.isAuthenticated = false;
     this.me = null;
@@ -178,6 +179,7 @@ export class Global extends EventEmitter{
    *
    */
   private updateSessionExpireTime() {
+    debug(`[updateSessionExpireTime]`);
     if (this.me) {
       this.sessionExpiresAfter = new Date(this.me.session.expiresAt);
       if (this.sessionExpiresAfter.getTime() < Date.now()) {
@@ -191,7 +193,8 @@ export class Global extends EventEmitter{
    * Runs after a user is successfully authenticated
    */
   private async onAuthenticated() {
-
+    debug(`[onAuthenticated]`);
+    this.isAuthenticated = true;
     this.api.setKey(this.me.session.id);
     this.updateSessionExpireTime(); //this might log user out if session is expired
 
@@ -211,7 +214,6 @@ export class Global extends EventEmitter{
     await Promise.all(loadConfigs);
     this.discoveryInterval = setInterval(this.pollSessionDiscovery, this.discoveryIntervalMs);
 
-    this.isAuthenticated = true;
     this.emit('authenticated', this.me);
   }
 
